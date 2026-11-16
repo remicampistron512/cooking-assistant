@@ -103,7 +103,7 @@ Fonctionnalités
 - une importation ne doit pas supprimer les données existantes avant la validation du fichier source.
 - le remplacement des ingrédients doit préserver l'intégrité des recettes qui les référencent. Le rapprochement par code CIQUAL et la mise à jour des enregistrements existants seront privilégiés à une suppression globale.
 
-### **4.4. Calcul nutritionnel**
+### **4.3. Calcul nutritionnel**
 
 Le système calcule automatiquement les valeurs nutritionnelles à partir des quantités d'ingrédients utilisées.
 
@@ -122,7 +122,7 @@ Le même principe s'applique aux protéines, glucides et lipides.
 **Règles de gestion :** 
 - les calculs doivent être effectués côté serveur, afin de garantir leur cohérence.
 
-### **4.5. Recherche et consultation des recettes**
+### **4.4. Recherche et consultation des recettes**
 
 Le visiteur peut rechercher des recettes à partir de leur titre, catégorie ou ingrédients.
 
@@ -136,7 +136,7 @@ Filtres envisagés :
 
 Les résultats sont présentés sous forme de cartes contenant une image, un titre, une durée et des informations nutritionnelles.
 
-### **4.6. Garde-manger personnel**
+### **4.5. Garde-manger personnel**
 
 L'utilisateur peut enregistrer les ingrédients dont il dispose, ainsi que leurs quantités.
 
@@ -147,7 +147,7 @@ Une fonction « Que puis-je cuisiner ? » propose des recettes selon les ingréd
 Les résultats distinguent les recettes entièrement réalisables et celles nécessitant des ingrédients supplémentaires.
 
 
-### **4.7. Planification des repas**
+### **4.6. Planification des repas**
 
 Un calendrier hebdomadaire permet d'affecter des recettes aux différents repas de la semaine.
 
@@ -159,7 +159,7 @@ L'utilisateur peut :
 - Consulter le récapitulatif des repas.    
 - Générer une liste de courses à partir du planning.    
 
-### **4.8. Listes de courses**
+### **4.7. Listes de courses**
 
 Les listes de courses peuvent être créées manuellement ou automatiquement à partir des recettes planifiées.
 
@@ -167,7 +167,7 @@ Le système doit regrouper les ingrédients identiques, convertir les unités co
 
 L'utilisateur peut cocher les produits achetés, ajuster les quantités et supprimer des lignes.
 
-### **4.9. Importation de recettes externes**
+### **4.8. Importation de recettes externes**
 
 L'administrateur peut importer des recettes depuis une source externe autorisant cet usage, via une API documentée.
 
@@ -187,7 +187,7 @@ Le système conserve l'identifiant externe, la source et les informations d'attr
 * les recettes importées ne doivent pas être dupliquées lors de plusieurs exécutions.
 - les droits de réutilisation des contenus importés doivent être vérifiés avant leur conservation et leur publication.
 
-### **4.10. Génération d'images culinaires par IA**
+### **4.9. Génération d'images culinaires par IA**
 
 Un utilisateur peut générer une illustration de sa recette à partir de son titre, de ses ingrédients et d'une description.
 
@@ -200,7 +200,7 @@ L'image validée est associée à la recette et conservée dans un espace de sto
 **Règles de gestion :** 
 * une image générée doit être identifiable comme telle. Elle ne doit pas être présentée comme une photographie authentique du plat réellement préparé.
 
-### **4.11. Administration**
+### **4.10. Administration**
 
 L'administration doit permettre de gérer :
 
