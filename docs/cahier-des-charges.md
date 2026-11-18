@@ -51,22 +51,25 @@ Cette répartition constitue une proposition de priorisation. Elle devra être v
 
 ### **4.1. Authentification et comptes utilisateurs**
 
-L'application doit permettre à un visiteur de créer un compte, de s'authentifier et de gérer ses informations personnelles.
+#### **4.1.1. Inscription, connexion et profil**
 
-Fonctionnalités attendues :
+- Le formulaire d'inscription demande un nom d'affichage, une adresse e-mail, un mot de passe et sa confirmation. L'adresse e-mail sert d'identifiant de connexion et doit être unique, sans distinction de casse. Le serveur valide les champs et applique les mêmes règles de mot de passe à l'inscription et à la réinitialisation.
+- Le compte est activé lorsque l'utilisateur ouvre le lien de confirmation envoyé par e-mail. Le lien est à usage unique et expire après 24 heures. Un nouvel envoi est possible depuis l'écran de connexion et invalide le lien précédent.
+- Après activation, l'utilisateur peut se connecter et se déconnecter. Depuis « Compte utilisateur », il peut consulter son profil et modifier son nom d'affichage. Un changement d'adresse exige la saisie du mot de passe actuel et la confirmation de la nouvelle adresse. L'adresse précédente reste active jusqu'à cette confirmation.
+- Le compte permet de gérer ses préférences et donne accès à « Mes recettes » et, au lot 2, à « Mes favoris » et au garde-manger personnel.
 
-- Inscription et connexion.
-    
-- Déconnexion.
-    
-- Réinitialisation du mot de passe.
-    
-- Consultation et modification du profil.
-    
-- Gestion des recettes personnelles.
-    
-- Gestion des préférences et favoris.
-    
+#### **4.1.2. Réinitialisation du mot de passe**
+
+- Depuis la connexion, « Mot de passe oublié » permet de saisir une adresse e-mail. L'application affiche le même message, que l'adresse corresponde ou non à un compte actif. Seule l'adresse confirmée d'un compte actif reçoit un lien de réinitialisation.
+- Le lien expire après une heure et devient inutilisable après un changement de mot de passe. Un lien expiré ou déjà utilisé invite l'utilisateur à faire une nouvelle demande.
+- L'utilisateur saisit et confirme le nouveau mot de passe. Après validation, les sessions ouvertes sont invalidées et l'utilisateur est invité à se reconnecter avec son nouveau mot de passe.
+- Les parcours de confirmation et de réinitialisation nécessitent un service d'envoi d'e-mails configuré dans l'environnement de déploiement.
+
+#### **4.1.3. Suppression du compte**
+
+- Depuis « Compte utilisateur », l'utilisateur peut demander la suppression de son compte. L'écran de confirmation annonce la suppression définitive de ses recettes publiques et privées, de ses favoris et de son garde-manger. L'utilisateur doit ressaisir son mot de passe et confirmer l'action. L'annulation laisse ses données intactes.
+- Après confirmation, le compte est supprimé et ses sessions et liens de réinitialisation sont invalidés. Toutes les recettes dont il était propriétaire sont supprimées selon la section 4.5.5. Leurs fiches et leurs photos deviennent inaccessibles, les photos téléversées sont supprimées du stockage et les favoris associés sont retirés des comptes qui les avaient enregistrées.
+- Les favoris personnels et les entrées du garde-manger du compte supprimé sont effacés. Les recettes appartenant aux autres comptes et les ingrédients partagés du catalogue CIQUAL sont conservés.
 
 ### **4.2. Catalogue des ingrédients**
 
@@ -550,7 +553,10 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 
 | Scénario                                                    | Résultat attendu                                            |
 | ----------------------------------------------------------- | ----------------------------------------------------------- |
-| Un utilisateur s'inscrit                                    | Le compte est créé                                          |
+| Un utilisateur s'inscrit puis confirme son adresse e-mail | Le compte est activé et l'utilisateur peut se connecter |
+| Un utilisateur demande une réinitialisation pour une adresse inconnue | Le même message s'affiche que pour un compte actif, sans envoi d'e-mail |
+| Un utilisateur change son mot de passe depuis le lien reçu | Le lien cesse de fonctionner, les sessions ouvertes sont invalidées et le nouveau mot de passe permet de se connecter |
+| Un utilisateur confirme la suppression de son compte avec des recettes publiques et privées | Le compte et ses recettes sont supprimés. Les fiches et photos sont inaccessibles, les favoris associés sont retirés et le garde-manger du compte est effacé |
 | Un utilisateur crée une recette                             | La recette et ses relations sont enregistrées               |
 | Le propriétaire modifie les ingrédients ou leurs quantités | Les modifications sont enregistrées et les valeurs nutritionnelles sont recalculées |
 | Un utilisateur enregistre une recette sans photo et garde la visibilité présélectionnée | La recette est privée et sa fiche affiche l'illustration par défaut |
@@ -620,7 +626,7 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 
 Le **socle fonctionnel** pourra être considéré comme livré lorsque les conditions suivantes seront remplies :
 
-- Un utilisateur peut s'inscrire et se connecter.    
+- Un utilisateur peut s'inscrire, confirmer son adresse e-mail, se connecter, réinitialiser son mot de passe et supprimer son compte.
 - Le catalogue CIQUAL français est consultable et recherchable.    
 - Un utilisateur peut créer une recette à partir d'ingrédients existants, puis la modifier, changer sa visibilité ou la supprimer.
 - Les quantités et étapes sont correctement enregistrées.    
