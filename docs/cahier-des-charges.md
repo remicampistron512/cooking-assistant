@@ -134,17 +134,29 @@ Fonctionnalités
 
 ### **4.4. Recherche et consultation des recettes**
 
-Le visiteur peut rechercher des recettes à partir de leur titre, catégorie ou ingrédients.
+Le catalogue public et sa recherche sont accessibles sans compte. Seules les recettes publiques y figurent, y compris lorsque l'utilisateur est connecté. Le propriétaire retrouve ses recettes privées dans « Mes recettes ».
 
-Filtres envisagés :
-- Temps de préparation.    
-- Calories par portion.    
-- Ingrédients présents.    
-- Catégorie de recette.    
-- Teneur en protéines/glucides/lipides   
-- Recettes favorites, pour les utilisateurs authentifiés.    
+#### **4.4.1. Critères disponibles au lot 1**
 
-Les résultats sont présentés sous forme de cartes contenant une image, un titre, une durée et des informations nutritionnelles.
+- **Titre.** La recherche textuelle accepte un titre complet ou partiel, sans distinction de casse ni d'accents.
+- **Catégorie.** L'utilisateur peut sélectionner une catégorie dans la liste proposée par l'application.
+- **Ingrédients présents.** L'utilisateur peut sélectionner un ou plusieurs ingrédients dans le catalogue CIQUAL. La recherche utilise leurs identifiants et vérifie leur présence dans la recette.
+- **Temps de préparation.** L'utilisateur peut fixer une durée maximale en minutes. Le temps de cuisson est traité séparément sur la fiche et n'entre pas dans ce filtre.
+- **Valeurs nutritionnelles par portion.** L'utilisateur peut renseigner une borne minimale, maximale ou les deux pour l'énergie en kcal et pour les protéines, glucides et lipides en grammes.
+
+Le filtre « Mes favoris » est prévu au lot 2 pour les utilisateurs connectés.
+
+#### **4.4.2. Combinaison des critères**
+
+- Une recette doit satisfaire tous les critères renseignés. Si plusieurs ingrédients sont sélectionnés, elle doit les contenir tous. Les critères laissés vides sont ignorés.
+- Les bornes de durée et de nutrition sont inclusives. Les filtres nutritionnels utilisent les valeurs avant arrondi d'affichage. Une recette dont la valeur filtrée est indisponible est exclue des résultats, conformément à la section 4.3.3.
+- Sans critère actif, la recherche affiche le catalogue des recettes publiques. Si aucun résultat ne correspond, un message l'indique et l'utilisateur peut réinitialiser les critères.
+
+#### **4.4.3. Tri et présentation des résultats**
+
+- Le tri par défaut est alphabétique sur le titre, de A à Z, sans distinction de casse ni d'accents. L'utilisateur peut choisir un tri par temps de préparation croissant ou par calories par portion croissantes. Pour le tri calorique, les valeurs avant arrondi sont utilisées et les recettes dont l'énergie est indisponible apparaissent à la fin.
+- Les égalités sur la durée ou les calories sont départagées par le titre, puis par l'identifiant de la recette dans l'ordre croissant. Pour le tri alphabétique, les titres équivalents sont également départagés par l'identifiant. La pagination conserve les critères et le tri sélectionnés.
+- Les résultats sont présentés sous forme de cartes avec une image, le titre, le temps de préparation et les informations nutritionnelles par portion.
 
 ### **4.5. Gestion des recettes**
 
@@ -504,6 +516,9 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Le propriétaire rend à nouveau publique une recette privée  | La fiche et sa photo sont accessibles publiquement et la recette réapparaît dans les favoris existants |
 | Le propriétaire confirme la suppression d'une recette      | La fiche devient inaccessible, les favoris associés et la photo téléversée sont supprimés |
 | Un utilisateur sélectionne un ingrédient CIQUAL             | L'ingrédient existant est réutilisé                         |
+| Un visiteur cherche « crepe », sélectionne la farine et les œufs, puis fixe un maximum de 20 minutes | Seules les recettes publiques dont le titre correspond, qui contiennent les deux ingrédients et qui demandent au plus 20 minutes de préparation sont affichées |
+| Un visiteur filtre les recettes à 500 kcal maximum par portion | Une recette à exactement 500 kcal est incluse. Une recette à 500,4 kcal et une recette sans valeur énergétique sont exclues |
+| Un visiteur trie les recettes par calories sans filtre nutritionnel | Les valeurs disponibles sont classées par ordre croissant, les égalités sont départagées par le titre puis l'identifiant, et les valeurs indisponibles figurent à la fin |
 | Une recette contient 200 g d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal                    |
 | Une recette contient 0,2 kg d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal |
 | Un utilisateur saisit une quantité en millilitres au lot 1 | Le formulaire refuse cette unité |
