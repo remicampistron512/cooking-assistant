@@ -1,0 +1,167 @@
+@startuml
+title Cooking Assistant — Diagramme de classes métier
+hide empty members
+skinparam classAttributeIconSize 0
+
+package "Lot 1 — Socle fonctionnel" {
+  class User {
+    id : Integer
+    displayName : String
+    email : String {unique, case-insensitive}
+    emailVerified : Boolean
+  }
+
+  class Recipe {
+    id : Integer
+    title : String
+    description : String [0..1]
+    preparationTimeMinutes : Integer
+    cookingTimeMinutes : Integer [0..1]
+    servingCount : Integer
+    photo : File [0..1]
+    countryOfOrigin : CountryCode [0..1]
+    visibility : Visibility = PRIVATE
+    --
+    calculateTotalNutrition() : NutritionValues
+    calculateNutritionPerServing() : NutritionValues
+  }
+
+  enum Visibility {
+    PRIVATE
+    PUBLIC
+  }
+
+  class NutritionValues <<valeur calculée>> {
+    energyKcal : Decimal [0..1]
+    proteinG : Decimal [0..1]
+    carbohydratesG : Decimal [0..1]
+    fatG : Decimal [0..1]
+  }
+
+  class RecipeCategory {
+    id : Integer
+    label : String
+  }
+
+  class RecipeIngredient {
+    id : Integer
+    quantity : Decimal
+    unit : Unit
+  }
+
+  class RecipeStep {
+    id : Integer
+    position : Integer
+    instruction : String
+  }
+
+  class Ingredient {
+    id : Integer
+    ciqualCode : String {unique}
+    frenchName : String
+    foodGroup : String
+    energyKcalPer100g : Decimal [0..1]
+    proteinGPer100g : Decimal [0..1]
+    carbohydratesGPer100g : Decimal [0..1]
+    fatGPer100g : Decimal [0..1]
+    image : File [0..1]
+    active : Boolean
+  }
+
+  class CiqualImport {
+    id : Integer
+    sourceVersion : String
+    mode : Partial or Full
+    importedAt : DateTime
+    result : String
+    validationReport : String
+  }
+}
+
+package "Lot 2 — Assistance culinaire" {
+  class Favorite {
+    addedAt : DateTime
+  }
+
+  class PantryItem {
+    quantity : Decimal
+    unit : Unit
+  }
+
+  class UnitConversion {
+    unit : Unit
+    gramsPerUnit : Decimal
+  }
+}
+
+package "Lot 3 — Importation de recettes externes" {
+  class ExternalRecipeReference {
+    source : String
+    externalId : String
+    attribution : String
+  }
+
+  class IngredientAlias {
+    label : String
+  }
+}
+
+User "1" -- "0..*" Recipe : owns
+RecipeCategory "1" -- "0..*" Recipe : categorizes
+Recipe ..> Visibility
+Recipe ..> NutritionValues : calculates
+Recipe "1" *-- "1..*" RecipeIngredient : contains
+Recipe "1" *-- "1..*" RecipeStep : orders
+RecipeIngredient "0..*" --> "1" Ingredient : references
+User "1" -- "0..*" CiqualImport : starts
+CiqualImport ..> Ingredient : updates
+User "1" *-- "0..*" Favorite : saves
+Favorite "0..*" --> "1" Recipe : refers to
+User "1" *-- "0..*" PantryItem : owns
+PantryItem "0..*" --> "1" Ingredient : references
+Ingredient "1" *-- "0..*" UnitConversion : defines
+Recipe "1" *-- "0..1" ExternalRecipeReference : has source reference
+Ingredient "1" *-- "0..*" IngredientAlias : has aliases
+
+note top of User
+  Authentification et autorisations gérées par Django.
+  Supprimer un compte supprime les recettes qu'il possède.
+end note
+
+note left of Recipe
+  Portions > 0. Nutrition calculée pour le total et par portion.
+  Une donnée CIQUAL inconnue rend la valeur correspondante
+  indisponible pour la recette.
+  Au lot 2, l'adaptation temporaire des portions sert
+  aussi à comparer les besoins au garde-manger.
+end note
+
+note bottom of RecipeStep
+  Position unique dans une recette.
+end note
+
+note bottom of RecipeIngredient
+  Quantité > 0. Grammes et kilogrammes au lot 1.
+  Un même ingrédient peut figurer sur plusieurs lignes.
+end note
+
+note bottom of Ingredient
+  Un code absent d'un import complet est désactivé.
+  Les recettes et stocks existants conservent le lien.
+end note
+
+note bottom of Favorite
+  Un favori par couple utilisateur–recette.
+  La visibilité détermine son affichage.
+  La suppression de la recette supprime ses favoris.
+end note
+
+note bottom of PantryItem
+  Une entrée par couple utilisateur–ingrédient.
+  Quantité > 0.
+end note
+
+note bottom of ExternalRecipeReference
+  Le couple source–identifiant externe est unique.
+end note
+@enduml
