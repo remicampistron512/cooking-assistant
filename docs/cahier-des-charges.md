@@ -35,11 +35,11 @@ Le projet sera développé de manière progressive, afin de distinguer les fonct
 
 **Lot 1 — Socle fonctionnel** (Prioritaire)
 
-Gestion des utilisateurs, catalogue d'ingrédients, recherche de recettes, création et modification de recettes, étapes de préparation, calcul des calories et macronutriments, administration.
+Gestion des utilisateurs, catalogue d'ingrédients, recherche de recettes, création et modification de recettes, étapes de préparation, saisie des quantités en grammes ou en kilogrammes, calcul des calories et macronutriments, administration.
 
 **Lot 2 — Assistance culinaire** (évolution)
 
-Garde-manger, recherche de recettes réalisables, conversion des unités, adaptation des portions et favoris.
+Garde-manger, recherche de recettes réalisables, conversions au-delà des unités de masse du lot 1, adaptation des portions et favoris.
 
 **Lot 3 — Importation de recettes externes** (avancé)
 
@@ -100,22 +100,23 @@ Fonctionnalités
 
 ### **4.3. Calcul nutritionnel**
 
-Le système calcule automatiquement les valeurs nutritionnelles à partir des quantités d'ingrédients utilisées.
+#### **4.3.1. Unités autorisées au lot 1**
 
-Pour un ingrédient :
-E = (M * C ) / 100
+- Chaque ligne d'ingrédient accepte une quantité décimale strictement positive en grammes (g) ou en kilogrammes (kg). Le serveur convertit les kilogrammes en grammes sur la base de `1 kg = 1 000 g`.
+- Les unités de volume, comme le millilitre ou la cuillère, et les quantités à la pièce sont refusées au lot 1. Leur conversion dépend de l'ingrédient et relève du lot 2.
 
-Avec :
-- \(E\) : énergie de l'ingrédient en kcal.    
-- \(M\) : masse de l'ingrédient en grammes.    
-- \(C\) : énergie pour 100 g.    
+#### **4.3.2. Calcul et arrondis**
 
-L'énergie totale de la recette correspond à la somme des énergies de ses ingrédients.
+- Le serveur calcule séparément l'énergie (kcal), les protéines, les glucides et les lipides (g). Pour chaque ligne et pour chaque valeur, la contribution est égale à `masse en g × valeur CIQUAL pour 100 g ÷ 100`.
+- Le total de la recette est la somme des contributions de ses ingrédients. La valeur par portion est obtenue en divisant ce total par le nombre de portions saisi dans la recette.
+- Le calcul utilise une arithmétique décimale. Les contributions et les totaux intermédiaires sont conservés sans arrondi d'affichage. Le total de la recette et la valeur par portion sont arrondis séparément à l'affichage, à l'unité pour les kcal et au dixième de gramme pour les macronutriments. À mi-chemin, on arrondit vers la valeur supérieure, par exemple `12,5 kcal → 13 kcal` et `1,25 g → 1,3 g`.
+- Après la validation d'une mise à jour des valeurs CIQUAL, les calculs des recettes concernées utilisent les nouvelles valeurs.
 
-Le même principe s'applique aux protéines, glucides et lipides.
+#### **4.3.3. Valeurs CIQUAL manquantes**
 
-**Règles de gestion :** 
-- les calculs doivent être effectués côté serveur, afin de garantir leur cohérence.
+- Une valeur absente ou sans quantité exacte exploitable, par exemple une cellule vide, une mention « traces » ou une valeur indiquée sous un seuil, est traitée comme inconnue. Une valeur numérique égale à zéro est conservée comme telle.
+- Si une valeur est inconnue pour au moins un ingrédient, la valeur nutritionnelle correspondante est affichée comme « Non disponible » pour la recette entière et par portion. Les autres valeurs restent calculées si leurs données sont complètes. L'enregistrement de la recette reste possible.
+- Lorsqu'un filtre nutritionnel est actif, une recette dont la valeur filtrée est indisponible est exclue des résultats.
 
 ### **4.4. Recherche et consultation des recettes**
 
@@ -143,7 +144,7 @@ Un utilisateur connecté peut créer une recette et retrouver ses propres recett
 - **Temps de préparation** (obligatoire). Durée en minutes, exprimée par un entier positif ou nul.
 - **Temps de cuisson** (facultatif). Durée en minutes, exprimée par un entier positif ou nul. Le champ peut rester vide si la recette ne nécessite pas de cuisson.
 - **Nombre de portions** (obligatoire). Entier strictement positif indiquant le nombre de portions obtenu avec les quantités saisies.
-- **Ingrédients** (obligatoires). Au moins une ligne. Chaque ligne contient un ingrédient du catalogue CIQUAL, une quantité strictement positive et une unité autorisée pour cet ingrédient. Les quantités saisies correspondent à l'ensemble de la recette.
+- **Ingrédients** (obligatoires). Au moins une ligne. Chaque ligne contient un ingrédient du catalogue CIQUAL, une quantité strictement positive et une unité autorisée au lot concerné (g ou kg au lot 1, voir section 4.3.1). Les quantités saisies correspondent à l'ensemble de la recette.
 - **Étapes de préparation** (obligatoires). Au moins une étape. Chaque étape comporte une instruction et une position dans la liste.
 - **Photo** (facultative). Image ajoutée par l'utilisateur pour illustrer la recette.
 - **Visibilité** (obligatoire). Le formulaire présélectionne « Privée » à la création. L'utilisateur peut choisir « Publique » avant l'enregistrement ou changer la visibilité par la suite.
@@ -490,6 +491,13 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Le propriétaire confirme la suppression d'une recette      | La fiche devient inaccessible, les favoris associés et la photo téléversée sont supprimés |
 | Un utilisateur sélectionne un ingrédient CIQUAL             | L'ingrédient existant est réutilisé                         |
 | Une recette contient 200 g d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal                    |
+| Une recette contient 0,2 kg d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal |
+| Un utilisateur saisit une quantité en millilitres au lot 1 | Le formulaire refuse cette unité |
+| Deux ingrédients apportent chacun 0,25 kcal et la recette donne deux portions | L'affichage indique 1 kcal pour la recette et 0 kcal par portion, calculées à partir du total de 0,50 kcal |
+| Une recette apporte 2,5 g de protéines pour deux portions | L'affichage indique 2,5 g pour la recette et 1,3 g par portion |
+| La valeur CIQUAL des lipides manque pour un ingrédient et les autres valeurs sont complètes | La recette peut être enregistrée. Seuls les lipides sont affichés comme « Non disponible » et un filtre sur les lipides exclut la recette |
+| Tous les ingrédients ont une valeur CIQUAL de 0 g de glucides pour 100 g | La recette et chaque portion affichent 0,0 g de glucides |
+| Une mise à jour CIQUAL modifie une valeur utilisée dans une recette | Les valeurs nutritionnelles affichées reflètent la donnée mise à jour |
 | Le nombre de portions change                                | Les valeurs par portion sont recalculées                    |
 | Un autre utilisateur tente de modifier une recette privée   | L'accès est refusé                                          |
 | Un fichier CIQUAL invalide est importé                      | L'import échoue sans perte de données                       |
