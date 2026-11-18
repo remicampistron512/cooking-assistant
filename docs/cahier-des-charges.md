@@ -420,7 +420,7 @@ Les principes ergonomiques sont les suivants :
 - photographies culinaires mises en valeur
 - formulaires accessibles,
 - hiérarchie visuelle cohérente 
-- Respect des critères WCAG 2.2 AA dans la mesure du possible.
+- Respect des critères d'accessibilité détaillés en section 9.2.
 
 Les maquettes seront réalisées sous Figma, et déclinaisons desktop/mobile.
 
@@ -523,9 +523,27 @@ En cas d'incident, les journaux techniques devront permettre d'identifier la cau
 
 ## **9. Exigences non fonctionnelles**
 
-- Responsive, le site doit fonctionner pour des résolutions allant du smartphone aux écrans 4k
-- Le site doit être accessible avec assez de contraste, une navigation au clavier et des libellés de formulaires clairs
-- L'application se doit d'être performante (audit lighthouse)
+### **9.1. Performance**
+
+- Mesurer l'accueil, les résultats d'une recherche avec filtres, la fiche d'une recette publique avec photo et le formulaire de modification d'une recette. Utiliser une instance de recette sous Docker avec les réglages de production, hors trafic de test concurrent, et un jeu de données fixe comprenant au moins 1 000 recettes, le catalogue CIQUAL importé et des photos représentatives.
+- Exécuter cinq audits Lighthouse par page en mode navigation avec le profil mobile simulé, sur la même machine, avec les mêmes versions de Chrome et Lighthouse et sans extension. Vider le cache du navigateur avant chaque mesure et conserver la session nécessaire à l'accès au formulaire. Consigner les versions, les paramètres de simulation, les URL et le jeu de données utilisés.
+- Sur chaque page, la médiane des cinq mesures doit satisfaire chacun des seuils suivants. Score de performance Lighthouse d'au moins 90 sur 100, LCP (affichage du plus grand élément visible) de 2,5 s maximum, CLS (décalages de mise en page) de 0,10 maximum et TBT (temps de blocage total) de 200 ms maximum. [Indicateurs et score Lighthouse](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring)
+
+### **9.2. Accessibilité**
+
+- Les pages et parcours utilisateur du lot 1 respectent les critères applicables de niveau A et AA des [WCAG 2.2](https://www.w3.org/TR/WCAG22/). La recette couvre l'inscription, la connexion, la réinitialisation du mot de passe, la recherche, la fiche recette ainsi que la création, la modification et la suppression d'une recette. Elle inclut les états d'erreur des formulaires et les confirmations.
+- Vérifier un contraste d'au moins 4,5:1 pour le texte courant et 3:1 pour le grand texte, ainsi qu'un contraste d'au moins 3:1 pour les éléments visuels nécessaires à l'identification des commandes et de leurs états, lorsque ces critères s'appliquent. Les cibles interactives respectent le minimum de 24 × 24 pixels CSS ou les conditions d'espacement et exceptions prévues par les WCAG 2.2.
+- Réaliser un audit automatisé avec axe-core sur chaque page testée, puis vérifier manuellement les parcours au clavier seul et avec NVDA sur Firefox et VoiceOver sur Safari iOS. Vérifier que le focus est visible, suit un ordre logique et ne reste pas bloqué, et que les libellés, erreurs et confirmations sont annoncés. Vérifier aussi qu'un agrandissement du texte à 200 % ne masque ni contenu ni commande.
+- La recette est validée si aucun écart aux critères A et AA applicables n'est relevé lors des contrôles automatisés et manuels. Le rapport indique les pages, les états et les versions des outils testés.
+
+### **9.3. Compatibilité mobile et tailles d'écran**
+
+- Vérifier les mises en page à 320, 360, 390, 768, 1 440 et 3 840 pixels CSS de large, à l'aide d'une fenêtre redimensionnée ou de l'émulation. À chaque largeur, les pages doivent rester utilisables sans défilement horizontal de la page, texte tronqué ni chevauchement bloquant une action.
+- Sur au moins un smartphone Android avec Chrome et un iPhone avec Safari, tester en portrait et en paysage avec les versions stables disponibles au moment de la recette. Consigner les modèles et les versions du système et du navigateur.
+- Sur chaque appareil, vérifier au toucher la navigation, la connexion, l'application des filtres, la consultation d'une fiche et la création ou la modification d'une recette avec photo. Vérifier que les champs, erreurs et actions de validation restent accessibles lorsque le clavier virtuel est ouvert. Tous les parcours testés doivent pouvoir être terminés sur les deux appareils.
+
+### **9.4. Autres exigences**
+
 - Protection CSRF, validation serveur et contrôle des autorisations
 - Transactions atomiques pour les imports critiques
 - Gestion des erreurs et messages explicites
@@ -636,4 +654,4 @@ Le **socle fonctionnel** pourra être considéré comme livré lorsque les condi
 - L'administration permet de gérer les données essentielles.    
 - Les tests critiques sont exécutés avec succès.    
 - L'application fonctionne dans un environnement Docker documenté.    
-- L'interface est exploitable sur ordinateur et smartphone.
+- Les seuils de performance et les contrôles d'accessibilité et de compatibilité mobile des sections 9.1 à 9.3 sont validés et documentés dans le rapport de recette.
