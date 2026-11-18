@@ -144,7 +144,7 @@ Le catalogue public et sa recherche sont accessibles sans compte. Seules les rec
 - **Temps de préparation.** L'utilisateur peut fixer une durée maximale en minutes. Le temps de cuisson est traité séparément sur la fiche et n'entre pas dans ce filtre.
 - **Valeurs nutritionnelles par portion.** L'utilisateur peut renseigner une borne minimale, maximale ou les deux pour l'énergie en kcal et pour les protéines, glucides et lipides en grammes.
 
-Le filtre « Mes favoris » est prévu au lot 2 pour les utilisateurs connectés.
+Le filtre « Mes favoris » est prévu au lot 2 pour les utilisateurs connectés. Il limite la recherche publique aux recettes publiques qu'ils ont ajoutées à leurs favoris. L'espace « Mes favoris » est décrit à la section 4.9.
 
 #### **4.4.2. Combinaison des critères**
 
@@ -275,6 +275,22 @@ Un tableau de bord administratif personnalisé pourra présenter les indicateurs
 
 Le socle d'administration s'appuiera sur Django Admin.
 
+### **4.9. Gestion des favoris**
+
+Les favoris sont disponibles au lot 2. Ils sont associés au compte et accessibles après connexion. Chaque utilisateur peut consulter et gérer sa propre liste.
+
+#### **4.9.1. Ajouter ou retirer un favori**
+
+- Depuis la fiche d'une recette publique ou de l'une de ses propres recettes privées, l'utilisateur connecté peut choisir « Ajouter aux favoris ». Pour un visiteur, l'action ouvre la page de connexion.
+- Une recette apparaît au plus une fois dans les favoris d'un même compte, même si l'ajout est demandé plusieurs fois. Après l'ajout, la fiche affiche l'action « Retirer des favoris ».
+- L'utilisateur peut retirer la recette depuis sa fiche ou directement depuis « Mes favoris ». Après le retrait, la recette disparaît de la liste et l'action « Ajouter aux favoris » est à nouveau disponible sur la fiche.
+
+#### **4.9.2. Affichage dans « Mes favoris »**
+
+- L'espace « Mes favoris » affiche les recettes publiques enregistrées et les recettes privées enregistrées dont l'utilisateur est propriétaire. Chaque carte affiche le titre, la photo ou l'illustration par défaut et le temps de préparation. Elle donne accès à la fiche et à l'action de retrait.
+- Les favoris sont affichés du plus récemment ajouté au plus ancien. Si aucune recette n'est visible, la page affiche « Aucun favori à afficher » et propose un lien vers le catalogue public.
+- Quand la recette d'un autre utilisateur devient privée, elle est masquée dans « Mes favoris ». Elle réapparaît si elle redevient publique. Quand une recette est supprimée, les favoris associés sont supprimés conformément à la section 4.5.5.
+
 ## **5. Arborescence du site**
 
 - **Accueil**
@@ -287,7 +303,9 @@ Le socle d'administration s'appuiera sur Django Admin.
     
     Créer / modifier une recette
     
-    Mes recettes et favoris
+    Mes recettes
+
+    Mes favoris
     
 - **Ingrédients**
     
@@ -539,6 +557,9 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Le propriétaire passe une recette publique en privé         | La recette disparaît de la recherche publique et des favoris des autres utilisateurs. La fiche et la photo sont protégées par les mêmes droits d'accès |
 | Le propriétaire rend à nouveau publique une recette privée  | La fiche et sa photo sont accessibles publiquement et la recette réapparaît dans les favoris existants |
 | Le propriétaire confirme la suppression d'une recette      | La fiche devient inaccessible, les favoris associés et la photo téléversée sont supprimés |
+| Un utilisateur connecté ajoute deux fois la même recette à ses favoris | Une seule carte apparaît dans « Mes favoris » et la fiche propose « Retirer des favoris » |
+| Un utilisateur retire son dernier favori depuis « Mes favoris » | La carte disparaît, la page affiche « Aucun favori à afficher » et la fiche propose de nouveau l'ajout |
+| Un utilisateur ajoute une de ses recettes privées à ses favoris | La recette apparaît dans son espace « Mes favoris » et reste absente du catalogue public, même avec le filtre « Mes favoris » |
 | Un utilisateur sélectionne un ingrédient CIQUAL             | L'ingrédient existant est réutilisé                         |
 | Un visiteur cherche « crepe », sélectionne la farine et les œufs, puis fixe un maximum de 20 minutes | Seules les recettes publiques dont le titre correspond, qui contiennent les deux ingrédients et qui demandent au plus 20 minutes de préparation sont affichées |
 | Un visiteur filtre les recettes à 500 kcal maximum par portion | Une recette à exactement 500 kcal est incluse. Une recette à 500,4 kcal et une recette sans valeur énergétique sont exclues |
