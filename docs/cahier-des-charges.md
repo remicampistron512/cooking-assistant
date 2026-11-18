@@ -14,9 +14,8 @@ Les objectifs secondaires sont de :
 2. Calculer automatiquement les calories et macronutriments.    
 3. Permettre la création de recettes à partir d'ingrédients existants.    
 4. Proposer des recettes selon les ingrédients disponibles.    
-5. Organiser les repas et générer des listes de courses.    
-6. Faciliter l'enrichissement du catalogue par importation et intelligence artificielle.    
-7. Proposer une interface responsive, accessible et entièrement francophone.
+5. Faciliter l'enrichissement du catalogue par importation et intelligence artificielle.
+6. Proposer une interface responsive, accessible et entièrement francophone.
 ## 2. **Public cible et utilisateurs**
 
 Trois profils d'utilisateurs sont envisagés.
@@ -24,7 +23,7 @@ Trois profils d'utilisateurs sont envisagés.
 | Profil              | Description                       | Principales possibilités                                                                |
 | ------------------- | --------------------------------- | --------------------------------------------------------------------------------------- |
 | Visiteur            | Utilisateur non authentifié       | Consulter et rechercher les recettes publiques, consulter les ingrédients               |
-| Utilisateur inscrit | Utilisateur disposant d'un compte | Créer des recettes, gérer ses favoris, son garde-manger, ses repas et ses courses       |
+| Utilisateur inscrit | Utilisateur disposant d'un compte | Créer des recettes, gérer ses favoris et son garde-manger                               |
 | Administrateur      | Responsable de la plateforme      | Administrer les recettes, ingrédients, utilisateurs, imports et traitements automatisés |
 
 Les visiteurs pourront consulter le contenu public sans obligation de créer un compte. Les fonctionnalités personnelles nécessiteront une authentification.
@@ -40,7 +39,7 @@ Gestion des utilisateurs, catalogue d'ingrédients, recherche de recettes, créa
 
 **Lot 2 — Assistance culinaire** (évolution)
 
-Garde-manger, recherche de recettes réalisables, conversion des unités, adaptation des portions, favoris, planificateur de repas et listes de courses.
+Garde-manger, recherche de recettes réalisables, conversion des unités, adaptation des portions et favoris.
 
 **Lot 3 — Automatisation et IA** (avancé)
 
@@ -147,27 +146,7 @@ Une fonction « Que puis-je cuisiner ? » propose des recettes selon les ingréd
 Les résultats distinguent les recettes entièrement réalisables et celles nécessitant des ingrédients supplémentaires.
 
 
-### **4.6. Planification des repas**
-
-Un calendrier hebdomadaire permet d'affecter des recettes aux différents repas de la semaine.
-
-L'utilisateur peut :
-
-- Naviguer entre les semaines.    
-- Ajouter ou retirer une recette.    
-- Modifier le nombre de portions prévues.    
-- Consulter le récapitulatif des repas.    
-- Générer une liste de courses à partir du planning.    
-
-### **4.7. Listes de courses**
-
-Les listes de courses peuvent être créées manuellement ou automatiquement à partir des recettes planifiées.
-
-Le système doit regrouper les ingrédients identiques, convertir les unités compatibles et présenter les articles par catégorie.
-
-L'utilisateur peut cocher les produits achetés, ajuster les quantités et supprimer des lignes.
-
-### **4.8. Importation de recettes externes**
+### **4.6. Importation de recettes externes**
 
 L'administrateur peut importer des recettes depuis une source externe autorisant cet usage, via une API documentée.
 
@@ -187,7 +166,7 @@ Le système conserve l'identifiant externe, la source et les informations d'attr
 * les recettes importées ne doivent pas être dupliquées lors de plusieurs exécutions.
 - les droits de réutilisation des contenus importés doivent être vérifiés avant leur conservation et leur publication.
 
-### **4.9. Génération d'images culinaires par IA**
+### **4.7. Génération d'images culinaires par IA**
 
 Un utilisateur peut générer une illustration de sa recette à partir de son titre, de ses ingrédients et d'une description.
 
@@ -200,7 +179,7 @@ L'image validée est associée à la recette et conservée dans un espace de sto
 **Règles de gestion :** 
 * une image générée doit être identifiable comme telle. Elle ne doit pas être présentée comme une photographie authentique du plat réellement préparé.
 
-### **4.10. Administration**
+### **4.8. Administration**
 
 L'administration doit permettre de gérer :
 
@@ -242,10 +221,6 @@ Le socle d'administration s'appuiera sur Django Admin.
     Mes ingrédients
     
     Que puis-je cuisiner ?
-    
-- **Planificateur de repas**
-    
-- **Liste de courses**
     
 - **Compte utilisateur**
     
@@ -313,10 +288,6 @@ Les principales entités sont :
 |RecipeStep|Étapes ordonnées de préparation|
 |Favorite|Association entre utilisateur et recette favorite|
 |PantryItem|Ingrédient disponible dans le garde-manger|
-|MealPlan|Planification des repas|
-|PlannedMeal|Recette affectée à un créneau|
-|ShoppingList|Liste de courses|
-|ShoppingListItem|Article d'une liste|
 |IngredientAlias|Correspondances et synonymes d'ingrédients|
 |ImageGeneration|Suivi des générations d'images|
 
@@ -494,7 +465,6 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Un fichier CIQUAL invalide est importé                      | L'import échoue sans perte de données                       |
 | Une recette externe est importée deux fois                  | Aucun doublon n'est créé                                    |
 | Le garde-manger ne contient qu'une partie des ingrédients   | Les ingrédients manquants sont indiqués                     |
-| Une liste de courses est générée                            | Les ingrédients identiques sont regroupés après conversion  |
 | Une génération d'image échoue                               | Une erreur est affichée sans perte de recette               |
 | L'application est utilisée sur mobile                       | L'interface reste fonctionnelle sans débordement horizontal |
 ## **12. Livrables attendus**
