@@ -70,7 +70,7 @@ Fonctionnalités attendues :
 
 ### **4.2. Catalogue des ingrédients**
 
-Le catalogue s'appuie sur les données nutritionnelles importées depuis CIQUAL (provisoire)
+Le catalogue s'appuie sur les données nutritionnelles importées depuis CIQUAL.
 
 Chaque ingrédient se compose de :
 
@@ -91,12 +91,26 @@ Fonctionnalités
 - Consulter une fiche nutritionnelle.
 - Sélectionner un ingrédient dans un formulaire de recette.
 - Administrer les données.
-- Importer les fichiers CIQUAL au format XLS.
+- Importer et mettre à jour le catalogue CIQUAL depuis l'administration.
 
-**Règles de gestion  :
--  les données nutritionnelles doivent être exprimées dans des unités cohérentes, principalement pour 100 grammes.
-- une importation ne doit pas supprimer les données existantes avant la validation du fichier source.
-- le remplacement des ingrédients doit préserver l'intégrité des recettes qui les référencent. Le rapprochement par code CIQUAL et la mise à jour des enregistrements existants seront privilégiés à une suppression globale.
+#### **4.2.1. Format du fichier d'import**
+
+- Le lot 1 accepte un classeur Excel `.xls` préparé à partir des données CIQUAL. Le format d'entrée de l'application comporte une feuille `Ingredients`, une ligne d'en-têtes et une ligne par ingrédient. L'administrateur renseigne la version ou la date de publication des données source lors de l'import.
+- Les colonnes requises sont `code_ciqual`, `designation_fr`, `groupe_alimentaire`, `energie_kcal_100g`, `proteines_g_100g`, `glucides_g_100g` et `lipides_g_100g`. L'ordre des colonnes est libre. Le code CIQUAL est traité comme un texte afin de conserver ses éventuels zéros initiaux.
+- Le code, la désignation et le groupe doivent être renseignés. Les colonnes nutritionnelles doivent être présentes et peuvent contenir une valeur inconnue selon la section 4.3.3. L'énergie est exprimée en kcal et les macronutriments en grammes, dans les deux cas pour 100 g d'aliment.
+
+#### **4.2.2. Validation, lignes invalides et doublons**
+
+- Le serveur valide tout le classeur avant d'écrire dans le catalogue. Un fichier illisible, une feuille ou une colonne requise manquante, un en-tête requis dupliqué ou l'absence de lignes de données bloque l'import. Les lignes entièrement vides sont ignorées.
+- Une ligne est invalide si un champ d'identification requis est vide, si une valeur nutritionnelle est négative ou si elle contient un texte que l'application ne reconnaît ni comme une valeur numérique ni comme une valeur inconnue. Le rapport indique le numéro de ligne Excel, le champ concerné et le motif de l'erreur.
+- Les doublons sont identifiés par code CIQUAL après suppression des espaces en début et en fin de champ. Si les données normalisées sont identiques, une seule ligne est retenue et le doublon est signalé dans le rapport. Si les données diffèrent, l'import est bloqué et les lignes en conflit sont signalées.
+- Toute erreur bloquante laisse le catalogue intact. Après validation, les changements sont appliqués dans une seule transaction. Le rapport indique la version de la source, le résultat et le nombre d'ingrédients créés, mis à jour, réactivés ou désactivés, ainsi que les doublons identiques ignorés.
+
+#### **4.2.3. Mise à jour et ingrédients absents**
+
+- Un code CIQUAL inconnu crée un ingrédient. Un code existant met à jour l'ingrédient associé en conservant son identifiant interne, sa photo et ses liens avec les recettes. Réimporter le même fichier dans le même mode ne crée aucun doublon et ne modifie pas les données déjà à jour.
+- Par défaut, l'import est partiel. Les ingrédients absents du fichier conservent leur état et leurs données. L'administrateur peut choisir explicitement une mise à jour complète lorsqu'il dispose de l'intégralité du catalogue CIQUAL. Le rapport de validation indique combien d'ingrédients seront désactivés avant confirmation.
+- Lors d'une mise à jour complète, les ingrédients CIQUAL absents sont désactivés et conservés en base avec leurs dernières valeurs nutritionnelles. Ils restent visibles dans les recettes qui les utilisent et ces recettes peuvent être modifiées en conservant leurs lignes existantes. Les ingrédients désactivés disparaissent du catalogue public et de la liste de sélection pour les nouvelles lignes. Si leur code réapparaît lors d'un import validé, ils sont mis à jour et réactivés.
 
 ### **4.3. Calcul nutritionnel**
 
@@ -501,6 +515,11 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Le nombre de portions change                                | Les valeurs par portion sont recalculées                    |
 | Un autre utilisateur tente de modifier une recette privée   | L'accès est refusé                                          |
 | Un fichier CIQUAL invalide est importé                      | L'import échoue sans perte de données                       |
+| Une ligne contient une valeur nutritionnelle négative et les autres lignes sont valides | Le rapport localise l'erreur et le catalogue reste intact |
+| Un code CIQUAL apparaît deux fois dans le même fichier | Un doublon identique est ignoré et signalé. Des lignes contradictoires bloquent l'import |
+| Un fichier CIQUAL valide est importé deux fois dans le même mode | Le second import ne crée aucun doublon et ne modifie pas les données déjà à jour |
+| Un ingrédient utilisé dans une recette est absent d'une mise à jour CIQUAL | En mode partiel, l'ingrédient reste inchangé. En mode complet, il est désactivé pour les nouvelles sélections et la recette conserve le lien et les dernières valeurs nutritionnelles |
+| Un code CIQUAL désactivé réapparaît dans un fichier valide | L'ingrédient est réactivé avec le même identifiant et ses valeurs sont mises à jour |
 | Une recette externe est importée deux fois                  | Aucun doublon n'est créé                                    |
 | Le garde-manger ne contient qu'une partie des ingrédients   | Les ingrédients manquants sont indiqués                     |
 | L'application est utilisée sur mobile                       | L'interface reste fonctionnelle sans débordement horizontal |
