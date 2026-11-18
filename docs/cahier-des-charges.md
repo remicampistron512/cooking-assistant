@@ -206,13 +206,27 @@ Un utilisateur connecté peut créer une recette et retrouver ses propres recett
 
 ### **4.6. Garde-manger personnel**
 
-L'utilisateur peut enregistrer les ingrédients dont il dispose, ainsi que leurs quantités.
+Le garde-manger et la fonction « Que puis-je cuisiner ? » sont disponibles au lot 2. Chaque utilisateur connecté accède uniquement à son propre stock.
 
-Le système doit permettre d'ajouter, modifier et retirer des ingrédients du garde-manger.
+#### **4.6.1. Gestion du stock**
 
-Une fonction « Que puis-je cuisiner ? » propose des recettes selon les ingrédients disponibles.
+- L'utilisateur ajoute un ingrédient en le sélectionnant dans le catalogue CIQUAL et en renseignant une quantité décimale strictement positive et une unité autorisée. Le garde-manger affiche le nom de chaque ingrédient, sa quantité et son unité.
+- Le garde-manger contient une seule entrée par ingrédient CIQUAL. Si l'ingrédient est déjà présent, l'application ouvre la modification de son stock. La quantité enregistrée représente le stock total disponible.
+- L'utilisateur peut modifier une quantité ou retirer l'ingrédient de son garde-manger lorsqu'il n'en a plus. Un ingrédient désactivé dans le catalogue peut rester dans le stock existant et être pris en compte dans les comparaisons.
 
-Les résultats distinguent les recettes entièrement réalisables et celles nécessitant des ingrédients supplémentaires.
+#### **4.6.2. Comparaison avec les recettes**
+
+- La fonction examine les recettes publiques et les recettes privées de l'utilisateur. Elle compare les besoins pour le nombre de portions enregistré dans chaque recette avec le stock disponible au moment de la recherche. La consultation des suggestions laisse les quantités du garde-manger intactes.
+- Les ingrédients sont rapprochés par leur identifiant CIQUAL. Si un ingrédient figure sur plusieurs lignes d'une recette, les quantités requises sont additionnées après conversion dans une unité commune.
+- Les masses sont comparées en grammes. Une unité de volume ou une quantité à la pièce peut être convertie si une équivalence est définie pour l'ingrédient concerné. Si une quantité disponible ou requise ne peut pas être convertie dans une unité commune, l'ingrédient est signalé comme « Quantité à vérifier » et la recette ne peut pas être classée comme entièrement réalisable.
+- Un ingrédient absent du garde-manger a un stock nul. Quand les quantités sont comparables, la quantité manquante est la différence entre le besoin et le stock disponible si le besoin est supérieur. Un stock égal à la quantité requise suffit.
+
+#### **4.6.3. Affichage des suggestions et des manques**
+
+- Les recettes entièrement réalisables sont affichées en premier. Elles disposent de quantités suffisantes pour chaque ingrédient. Les recettes nécessitant un complément ou une vérification apparaissent ensuite si elles partagent au moins un ingrédient avec le garde-manger.
+- Pour chaque ingrédient manquant, le résultat affiche son nom, la quantité requise, la quantité disponible et le complément nécessaire dans une unité commune. Par exemple, si une recette demande 500 g de farine et que le stock en contient 200 g, le résultat indique « 300 g manquants ». Si la farine est absente, le résultat indique « 500 g manquants ».
+- Pour un ingrédient dont les quantités ne sont pas comparables, le résultat affiche les quantités avec leurs unités d'origine et la mention « Quantité à vérifier ».
+- Si le garde-manger est vide, l'application invite l'utilisateur à ajouter des ingrédients. Si aucune recette ne contient un ingrédient du stock, elle indique qu'aucune suggestion ne correspond.
 
 
 ### **4.7. Importation de recettes externes**
@@ -536,7 +550,10 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Un ingrédient utilisé dans une recette est absent d'une mise à jour CIQUAL | En mode partiel, l'ingrédient reste inchangé. En mode complet, il est désactivé pour les nouvelles sélections et la recette conserve le lien et les dernières valeurs nutritionnelles |
 | Un code CIQUAL désactivé réapparaît dans un fichier valide | L'ingrédient est réactivé avec le même identifiant et ses valeurs sont mises à jour |
 | Une recette externe est importée deux fois                  | Aucun doublon n'est créé                                    |
-| Le garde-manger ne contient qu'une partie des ingrédients   | Les ingrédients manquants sont indiqués                     |
+| Le garde-manger contient 0,2 kg de farine et la recette en demande 500 g | La recette apparaît parmi celles nécessitant un complément et indique 300 g de farine manquants |
+| Une recette contient deux lignes de 100 g et 150 g du même ingrédient et le garde-manger en contient 250 g | Les besoins sont additionnés et l'ingrédient est entièrement couvert |
+| Une recette contient un ingrédient absent du garde-manger et un autre présent en quantité suffisante | Le résultat indique que la quantité totale du premier ingrédient manque |
+| Une recette demande une quantité en grammes alors que le stock est indiqué en pièces sans équivalence | Le résultat affiche « Quantité à vérifier » et la recette ne figure pas parmi celles entièrement réalisables |
 | L'application est utilisée sur mobile                       | L'interface reste fonctionnelle sans débordement horizontal |
 ## **12. Livrables attendus**
 
