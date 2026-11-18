@@ -197,12 +197,21 @@ Un utilisateur connecté peut créer une recette et retrouver ses propres recett
 - La description, le temps de cuisson et le pays d'origine s'affichent lorsqu'ils sont renseignés.
 - Si aucune photo n'est fournie, une illustration par défaut s'affiche sur la fiche et sur les cartes de recettes.
 - Le propriétaire voit la visibilité actuelle de sa recette et peut accéder aux actions de modification et de suppression depuis la fiche.
+- Au lot 2, la fiche permet de choisir un nombre de portions et d'afficher les quantités correspondantes selon la section 4.5.6.
 
 #### **4.5.5. Effets d'un changement de visibilité ou d'une suppression**
 
 - **Passage en privé.** La recette est retirée du catalogue et de la recherche publics. Sa photo est conservée et soumise aux mêmes droits d'accès que la fiche, y compris par son URL directe. Les favoris existants sont conservés, mais la recette est masquée dans les listes des utilisateurs qui n'y ont plus accès.
 - **Passage en public.** La recette et sa photo deviennent accessibles publiquement. La recette redevient visible dans les listes de favoris des utilisateurs qui l'avaient enregistrée.
 - **Suppression confirmée.** La fiche devient inaccessible. Les associations de favoris et la photo téléversée sont supprimées. L'illustration par défaut reste disponible pour les autres recettes.
+
+#### **4.5.6. Adaptation des portions au lot 2**
+
+- À l'ouverture de la fiche, le sélecteur reprend le nombre de portions enregistré. L'utilisateur peut choisir un entier strictement positif et revenir au nombre de portions d'origine. Une valeur invalide déclenche un message et les résultats restent affichés pour le dernier nombre valide.
+- Chaque quantité est recalculée à partir de la recette enregistrée selon la formule `quantité adaptée = quantité d'origine × portions choisies ÷ portions d'origine`. Par exemple, 300 g pour 4 portions donnent 450 g pour 6 portions ou 150 g pour 2 portions. L'affichage conserve l'unité d'origine et peut montrer des fractions, y compris pour un ingrédient à la pièce.
+- Les quantités affichées peuvent être arrondies. Le recalcul et la comparaison avec le stock utilisent les quantités avant arrondi d'affichage. Chaque changement repart des quantités enregistrées.
+- Le total nutritionnel affiché est ajusté dans la même proportion. Les valeurs par portion et les mentions « Non disponible » sont conservées. Les règles d'arrondi de la section 4.3.2 s'appliquent à l'affichage. Les étapes et les durées restent celles de la recette enregistrée.
+- Le choix est temporaire et accessible aux visiteurs pour les recettes publiques. Il ne modifie ni la recette enregistrée ni le stock. Pour un utilisateur connecté, le bilan du garde-manger sur la fiche est recalculé avec les quantités adaptées.
 
 ### **4.6. Garde-manger personnel**
 
@@ -216,7 +225,8 @@ Le garde-manger et la fonction « Que puis-je cuisiner ? » sont disponibles au 
 
 #### **4.6.2. Comparaison avec les recettes**
 
-- La fonction examine les recettes publiques et les recettes privées de l'utilisateur. Elle compare les besoins pour le nombre de portions enregistré dans chaque recette avec le stock disponible au moment de la recherche. La consultation des suggestions laisse les quantités du garde-manger intactes.
+- La fonction examine les recettes publiques et les recettes privées de l'utilisateur. Par défaut, elle utilise le nombre de portions enregistré pour chaque recette. Si l'utilisateur saisit un nombre de portions dans « Que puis-je cuisiner ? », ce nombre s'applique à toutes les recettes évaluées et est repris à l'ouverture d'une fiche depuis les résultats. Effacer ce choix rétablit le nombre de portions d'origine de chaque recette.
+- Le garde-manger est comparé aux besoins ajustés selon la section 4.5.6. Les suggestions et les quantités manquantes sont recalculées à chaque changement valide du nombre de portions, à partir du stock disponible. La recherche laisse les quantités du garde-manger intactes.
 - Les ingrédients sont rapprochés par leur identifiant CIQUAL. Si un ingrédient figure sur plusieurs lignes d'une recette, les quantités requises sont additionnées après conversion dans une unité commune.
 - Les masses sont comparées en grammes. Une unité de volume ou une quantité à la pièce peut être convertie si une équivalence est définie pour l'ingrédient concerné. Si une quantité disponible ou requise ne peut pas être convertie dans une unité commune, l'ingrédient est signalé comme « Quantité à vérifier » et la recette ne peut pas être classée comme entièrement réalisable.
 - Un ingrédient absent du garde-manger a un stock nul. Quand les quantités sont comparables, la quantité manquante est la différence entre le besoin et le stock disponible si le besoin est supérieur. Un stock égal à la quantité requise suffit.
@@ -541,7 +551,10 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | La valeur CIQUAL des lipides manque pour un ingrédient et les autres valeurs sont complètes | La recette peut être enregistrée. Seuls les lipides sont affichés comme « Non disponible » et un filtre sur les lipides exclut la recette |
 | Tous les ingrédients ont une valeur CIQUAL de 0 g de glucides pour 100 g | La recette et chaque portion affichent 0,0 g de glucides |
 | Une mise à jour CIQUAL modifie une valeur utilisée dans une recette | Les valeurs nutritionnelles affichées reflètent la donnée mise à jour |
-| Le nombre de portions change                                | Les valeurs par portion sont recalculées                    |
+| Le propriétaire enregistre un nouveau nombre de portions sans modifier les quantités d'une recette | Le total nutritionnel reste identique et les valeurs par portion sont recalculées |
+| Une fiche indique 300 g pour 4 portions et le visiteur choisit 6 portions puis 2 | La fiche affiche successivement 450 g et 150 g. Le total nutritionnel s'adapte et la recette enregistrée reste inchangée |
+| L'utilisateur a 400 g de farine en stock et la recette en demande 300 g pour 4 portions | La farine est couverte pour 4 portions. À 6 portions, le bilan indique 50 g manquants et le stock reste à 400 g |
+| L'utilisateur saisit zéro ou un nombre fractionnaire dans le sélecteur de portions | Un message indique que le nombre doit être un entier strictement positif et le dernier résultat valide reste affiché |
 | Un autre utilisateur tente de modifier une recette privée   | L'accès est refusé                                          |
 | Un fichier CIQUAL invalide est importé                      | L'import échoue sans perte de données                       |
 | Une ligne contient une valeur nutritionnelle négative et les autres lignes sont valides | Le rapport localise l'erreur et le catalogue reste intact |
