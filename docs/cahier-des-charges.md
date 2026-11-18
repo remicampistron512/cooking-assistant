@@ -135,16 +135,34 @@ Les résultats sont présentés sous forme de cartes contenant une image, un tit
 
 Un utilisateur connecté peut créer une recette et retrouver ses propres recettes dans l'espace « Mes recettes ».
 
-- **Ajouter une recette.** Renseigner le titre, la catégorie, la durée de préparation et le nombre de portions. Sélectionner les ingrédients dans le catalogue CIQUAL, préciser leur quantité et leur unité, puis saisir les étapes de préparation dans l'ordre. Une photo peut être ajoutée.
-- **Modifier une recette.** Mettre à jour ses informations, ajouter ou retirer des ingrédients et modifier l'ordre des étapes. Les valeurs nutritionnelles sont recalculées côté serveur lorsque les ingrédients, les quantités, les unités ou le nombre de portions changent.
-- **Gérer la visibilité.** Choisir si la recette est publique ou privée et modifier ce choix depuis « Mes recettes ». Les recettes publiques sont consultables et peuvent apparaître dans les résultats de recherche.
-- **Supprimer une recette.** Demander la confirmation de l'utilisateur avant de supprimer la recette.
+#### **4.5.1. Propriétés d'une recette**
 
-**Règles de gestion**
+- **Titre** (obligatoire). Nom affiché sur la fiche et dans la recherche.
+- **Description** (facultative). Court texte de présentation de la recette.
+- **Catégorie** (obligatoire). Catégorie choisie dans la liste proposée par l'application, par exemple entrée, plat ou dessert.
+- **Temps de préparation** (obligatoire). Durée en minutes, exprimée par un entier positif ou nul.
+- **Temps de cuisson** (facultatif). Durée en minutes, exprimée par un entier positif ou nul. Le champ peut rester vide si la recette ne nécessite pas de cuisson.
+- **Nombre de portions** (obligatoire). Entier strictement positif indiquant le nombre de portions obtenu avec les quantités saisies.
+- **Ingrédients** (obligatoires). Au moins une ligne. Chaque ligne contient un ingrédient du catalogue CIQUAL, une quantité strictement positive et une unité autorisée pour cet ingrédient. Les quantités saisies correspondent à l'ensemble de la recette.
+- **Étapes de préparation** (obligatoires). Au moins une étape. Chaque étape comporte une instruction et une position dans la liste.
+- **Photo** (facultative). Image ajoutée par l'utilisateur pour illustrer la recette.
+- **Visibilité** (obligatoire). Recette publique ou privée, selon le choix de l'utilisateur.
+- **Identifiant et propriétaire** (attribués par le système). L'identifiant est unique et le compte qui crée la recette en devient le propriétaire.
+- **Valeurs nutritionnelles** (calculées par le système). Énergie en kcal et quantités de protéines, glucides et lipides en grammes, pour la recette entière et par portion. Les valeurs par portion sont obtenues en divisant les totaux par le nombre de portions.
+- **Pays** (facultatif) Décrit le pays d'origine de la recette.
+
+#### **4.5.2. Actions dans « Mes recettes »**
+
+- **Ajouter une recette.** Le formulaire permet de renseigner les propriétés, d'ajouter les lignes d'ingrédients et de saisir les étapes dans l'ordre. Après l'enregistrement, l'utilisateur accède à la fiche de la recette.
+- **Modifier une recette.** Le formulaire reprend les données enregistrées. L'utilisateur peut les corriger, ajouter ou retirer des ingrédients, ainsi qu'ajouter, modifier, retirer ou réordonner les étapes. Les valeurs nutritionnelles sont recalculées côté serveur lorsque les ingrédients, les quantités, les unités ou le nombre de portions changent.
+- **Gérer la visibilité.** Choisir si la recette est publique ou privée et modifier ce choix depuis « Mes recettes ». Les recettes publiques sont consultables et peuvent apparaître dans les résultats de recherche.
+- **Supprimer une recette.** L'application demande une confirmation avant de supprimer la recette. Après confirmation, la recette est retirée de « Mes recettes » et, si elle était publique, du catalogue public.
+
+#### **4.5.3. Règles de gestion**
 
 - Seuls le propriétaire de la recette et les administrateurs autorisés peuvent la modifier, changer sa visibilité ou la supprimer.
 - Seuls le propriétaire et les administrateurs autorisés peuvent consulter une recette privée, y compris par accès direct à sa fiche.
-- Le serveur vérifie les champs obligatoires, la validité des ingrédients et de leurs unités, ainsi que les quantités et le nombre de portions, qui doivent être strictement positifs. En cas d'erreur, le formulaire indique les champs à corriger et conserve les données saisies.
+- Le serveur applique les règles de saisie décrites dans la liste des propriétés. En cas d'erreur, le formulaire indique les champs à corriger et conserve les données saisies. Pour une recette existante, la version précédemment enregistrée reste disponible jusqu'à la validation de la modification.
 
 ### **4.6. Garde-manger personnel**
 
