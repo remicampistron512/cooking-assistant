@@ -14,7 +14,7 @@ Les objectifs secondaires sont de :
 2. Calculer automatiquement les calories et macronutriments.    
 3. Permettre la création de recettes à partir d'ingrédients existants.    
 4. Proposer des recettes selon les ingrédients disponibles.    
-5. Faciliter l'enrichissement du catalogue par importation et intelligence artificielle.
+5. Faciliter l'enrichissement du catalogue par l'importation de recettes externes.
 6. Proposer une interface responsive, accessible et entièrement francophone.
 ## 2. **Public cible et utilisateurs**
 
@@ -41,9 +41,9 @@ Gestion des utilisateurs, catalogue d'ingrédients, recherche de recettes, créa
 
 Garde-manger, recherche de recettes réalisables, conversion des unités, adaptation des portions et favoris.
 
-**Lot 3 — Automatisation et IA** (avancé)
+**Lot 3 — Importation de recettes externes** (avancé)
 
-Importation de recettes externes, rapprochement intelligent des ingrédients, génération d'images culinaires, création de recettes assistée par IA et reconnaissance de recettes à partir de photographies.
+Importation de recettes externes et rapprochement de leurs ingrédients avec le catalogue CIQUAL.
 
 Cette répartition constitue une proposition de priorisation. Elle devra être validée avant la réalisation.
 
@@ -166,20 +166,7 @@ Le système conserve l'identifiant externe, la source et les informations d'attr
 * les recettes importées ne doivent pas être dupliquées lors de plusieurs exécutions.
 - les droits de réutilisation des contenus importés doivent être vérifiés avant leur conservation et leur publication.
 
-### **4.7. Génération d'images culinaires par IA**
-
-Un utilisateur peut générer une illustration de sa recette à partir de son titre, de ses ingrédients et d'une description.
-
-Le service de génération doit permettre de choisir un style photographique et de prévisualiser le résultat.
-
-L'architecture doit rester indépendante du fournisseur afin de pouvoir intégrer différents modèles, notamment Ideogram ou FLUX.
-
-L'image validée est associée à la recette et conservée dans un espace de stockage maîtrisé par l'application.
-
-**Règles de gestion :** 
-* une image générée doit être identifiable comme telle. Elle ne doit pas être présentée comme une photographie authentique du plat réellement préparé.
-
-### **4.8. Administration**
+### **4.7. Administration**
 
 L'administration doit permettre de gérer :
 
@@ -189,7 +176,6 @@ L'administration doit permettre de gérer :
 - Les imports CIQUAL.    
 - Les imports de recettes externes.    
 - Les associations entre ingrédients externes et ingrédients CIQUAL.    
-- Les générations d'images.    
 - Les erreurs et historiques des traitements automatisés.   
 
 Un tableau de bord administratif personnalisé pourra présenter les indicateurs suivants : nombre de recettes, nombre d'utilisateurs, nombre d'ingrédients, imports récents et traitements en échec.
@@ -271,9 +257,9 @@ Importation XLS
 
 **Services externes**
 
-Recettes · Images IA
+Sources de recettes externes
 
-Les traitements volumineux (importation de milliers d'ingrédients, génération d'images, rapprochement des ingrédients) pourront être exécutés en arrière-plan à l'aide d'une file de tâches, par exemple Celery et Redis.
+Les traitements volumineux (importation de milliers d'ingrédients, rapprochement des ingrédients) pourront être exécutés en arrière-plan à l'aide d'une file de tâches, par exemple Celery et Redis.
 
 ### **6.3. Modèle de données prévisionnel**
 
@@ -289,7 +275,6 @@ Les principales entités sont :
 |Favorite|Association entre utilisateur et recette favorite|
 |PantryItem|Ingrédient disponible dans le garde-manger|
 |IngredientAlias|Correspondances et synonymes d'ingrédients|
-|ImageGeneration|Suivi des générations d'images|
 
 Les entités du socle seront implémentées en priorité. Les autres seront introduites progressivement, selon les lots retenus.
 
@@ -448,8 +433,6 @@ L'application devra appliquer les principes suivants :
 - Gestion des données personnelles conformément aux obligations applicables du RGPD.    
 - Sauvegarde et restauration de la base de données.    
 
-Les contenus générés par IA devront être identifiables et soumis à une validation utilisateur avant leur publication.
-
 ## **11. Tests et recette fonctionnelle**
 
 Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'erreur.
@@ -465,7 +448,6 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Un fichier CIQUAL invalide est importé                      | L'import échoue sans perte de données                       |
 | Une recette externe est importée deux fois                  | Aucun doublon n'est créé                                    |
 | Le garde-manger ne contient qu'une partie des ingrédients   | Les ingrédients manquants sont indiqués                     |
-| Une génération d'image échoue                               | Une erreur est affichée sans perte de recette               |
 | L'application est utilisée sur mobile                       | L'interface reste fonctionnelle sans débordement horizontal |
 ## **12. Livrables attendus**
 
@@ -491,7 +473,6 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 |Ingrédients difficiles à rapprocher|Calculs incomplets|Synonymes, scores de correspondance et validation humaine|
 |Conversion des unités imprécise|Erreurs nutritionnelles|Conversions spécifiques aux ingrédients|
 |Droits de réutilisation des recettes|Risque juridique|Vérification des licences et conditions des API|
-|Coût des API d'IA|Dépassement budgétaire|Quotas, journalisation et limites d'utilisation|
 |Complexité du périmètre|Retard de livraison|Développement par lots et priorisation|
 |Performances sur un grand catalogue|Recherche lente|Indexation et pagination|
 |Dépendance aux services externes|Indisponibilité|Gestion des échecs et mécanismes de reprise|
