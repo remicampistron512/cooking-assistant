@@ -68,10 +68,6 @@ Fonctionnalités attendues :
 - Gestion des préférences et favoris.
     
 
-**Règles de gestion  :
--  un utilisateur ne peut modifier ou supprimer que ses propres recettes, sauf s'il dispose des autorisations administratives nécessaires.
--  une recette privée ne peut être consultée que par son propriétaire ou par un administrateur autorisé.
-
 ### **4.2. Catalogue des ingrédients**
 
 Le catalogue s'appuie sur les données nutritionnelles importées depuis CIQUAL (provisoire)
@@ -135,7 +131,22 @@ Filtres envisagés :
 
 Les résultats sont présentés sous forme de cartes contenant une image, un titre, une durée et des informations nutritionnelles.
 
-### **4.5. Garde-manger personnel**
+### **4.5. Gestion des recettes**
+
+Un utilisateur connecté peut créer une recette et retrouver ses propres recettes dans l'espace « Mes recettes ».
+
+- **Ajouter une recette.** Renseigner le titre, la catégorie, la durée de préparation et le nombre de portions. Sélectionner les ingrédients dans le catalogue CIQUAL, préciser leur quantité et leur unité, puis saisir les étapes de préparation dans l'ordre. Une photo peut être ajoutée.
+- **Modifier une recette.** Mettre à jour ses informations, ajouter ou retirer des ingrédients et modifier l'ordre des étapes. Les valeurs nutritionnelles sont recalculées côté serveur lorsque les ingrédients, les quantités, les unités ou le nombre de portions changent.
+- **Gérer la visibilité.** Choisir si la recette est publique ou privée et modifier ce choix depuis « Mes recettes ». Les recettes publiques sont consultables et peuvent apparaître dans les résultats de recherche.
+- **Supprimer une recette.** Demander la confirmation de l'utilisateur avant de supprimer la recette.
+
+**Règles de gestion**
+
+- Seuls le propriétaire de la recette et les administrateurs autorisés peuvent la modifier, changer sa visibilité ou la supprimer.
+- Seuls le propriétaire et les administrateurs autorisés peuvent consulter une recette privée, y compris par accès direct à sa fiche.
+- Le serveur vérifie les champs obligatoires, la validité des ingrédients et de leurs unités, ainsi que les quantités et le nombre de portions, qui doivent être strictement positifs. En cas d'erreur, le formulaire indique les champs à corriger et conserve les données saisies.
+
+### **4.6. Garde-manger personnel**
 
 L'utilisateur peut enregistrer les ingrédients dont il dispose, ainsi que leurs quantités.
 
@@ -146,7 +157,7 @@ Une fonction « Que puis-je cuisiner ? » propose des recettes selon les ingréd
 Les résultats distinguent les recettes entièrement réalisables et celles nécessitant des ingrédients supplémentaires.
 
 
-### **4.6. Importation de recettes externes**
+### **4.7. Importation de recettes externes**
 
 L'administrateur peut importer des recettes depuis une source externe autorisant cet usage, via une API documentée.
 
@@ -166,7 +177,7 @@ Le système conserve l'identifiant externe, la source et les informations d'attr
 * les recettes importées ne doivent pas être dupliquées lors de plusieurs exécutions.
 - les droits de réutilisation des contenus importés doivent être vérifiés avant leur conservation et leur publication.
 
-### **4.7. Administration**
+### **4.8. Administration**
 
 L'administration doit permettre de gérer :
 
@@ -441,6 +452,9 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | ----------------------------------------------------------- | ----------------------------------------------------------- |
 | Un utilisateur s'inscrit                                    | Le compte est créé                                          |
 | Un utilisateur crée une recette                             | La recette et ses relations sont enregistrées               |
+| Le propriétaire modifie les ingrédients ou leurs quantités | Les modifications sont enregistrées et les valeurs nutritionnelles sont recalculées |
+| Le propriétaire passe une recette publique en privé         | La recette disparaît de la recherche publique et l'accès direct est protégé |
+| Le propriétaire confirme la suppression d'une recette      | La recette disparaît de « Mes recettes » et du catalogue public si elle y figurait |
 | Un utilisateur sélectionne un ingrédient CIQUAL             | L'ingrédient existant est réutilisé                         |
 | Une recette contient 200 g d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal                    |
 | Le nombre de portions change                                | Les valeurs par portion sont recalculées                    |
@@ -482,7 +496,7 @@ Le **socle fonctionnel** pourra être considéré comme livré lorsque les condi
 
 - Un utilisateur peut s'inscrire et se connecter.    
 - Le catalogue CIQUAL français est consultable et recherchable.    
-- Un utilisateur peut créer une recette à partir d'ingrédients existants.    
+- Un utilisateur peut créer une recette à partir d'ingrédients existants, puis la modifier, changer sa visibilité ou la supprimer.
 - Les quantités et étapes sont correctement enregistrées.    
 - Les calories et macronutriments sont calculés correctement.    
 - Les recettes privées sont protégées.    
