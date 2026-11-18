@@ -146,16 +146,16 @@ Un utilisateur connecté peut créer une recette et retrouver ses propres recett
 - **Ingrédients** (obligatoires). Au moins une ligne. Chaque ligne contient un ingrédient du catalogue CIQUAL, une quantité strictement positive et une unité autorisée pour cet ingrédient. Les quantités saisies correspondent à l'ensemble de la recette.
 - **Étapes de préparation** (obligatoires). Au moins une étape. Chaque étape comporte une instruction et une position dans la liste.
 - **Photo** (facultative). Image ajoutée par l'utilisateur pour illustrer la recette.
-- **Visibilité** (obligatoire). Recette publique ou privée, selon le choix de l'utilisateur.
+- **Visibilité** (obligatoire). Le formulaire présélectionne « Privée » à la création. L'utilisateur peut choisir « Publique » avant l'enregistrement ou changer la visibilité par la suite.
 - **Identifiant et propriétaire** (attribués par le système). L'identifiant est unique et le compte qui crée la recette en devient le propriétaire.
 - **Valeurs nutritionnelles** (calculées par le système). Énergie en kcal et quantités de protéines, glucides et lipides en grammes, pour la recette entière et par portion. Les valeurs par portion sont obtenues en divisant les totaux par le nombre de portions.
-- **Pays** (facultatif) Décrit le pays d'origine de la recette.
+- **Pays d'origine** (facultatif). L'utilisateur peut sélectionner un seul pays dans une liste de noms en français ou laisser le champ vide.
 
 #### **4.5.2. Actions dans « Mes recettes »**
 
 - **Ajouter une recette.** Le formulaire permet de renseigner les propriétés, d'ajouter les lignes d'ingrédients et de saisir les étapes dans l'ordre. Après l'enregistrement, l'utilisateur accède à la fiche de la recette.
 - **Modifier une recette.** Le formulaire reprend les données enregistrées. L'utilisateur peut les corriger, ajouter ou retirer des ingrédients, ainsi qu'ajouter, modifier, retirer ou réordonner les étapes. Les valeurs nutritionnelles sont recalculées côté serveur lorsque les ingrédients, les quantités, les unités ou le nombre de portions changent.
-- **Gérer la visibilité.** Choisir si la recette est publique ou privée et modifier ce choix depuis « Mes recettes ». Les recettes publiques sont consultables et peuvent apparaître dans les résultats de recherche.
+- **Gérer la visibilité.** Passer une recette de privée à publique ou de publique à privée depuis « Mes recettes ».
 - **Supprimer une recette.** L'application demande une confirmation avant de supprimer la recette. Après confirmation, la recette est retirée de « Mes recettes » et, si elle était publique, du catalogue public.
 
 #### **4.5.3. Règles de gestion**
@@ -163,6 +163,19 @@ Un utilisateur connecté peut créer une recette et retrouver ses propres recett
 - Seuls le propriétaire de la recette et les administrateurs autorisés peuvent la modifier, changer sa visibilité ou la supprimer.
 - Seuls le propriétaire et les administrateurs autorisés peuvent consulter une recette privée, y compris par accès direct à sa fiche.
 - Le serveur applique les règles de saisie décrites dans la liste des propriétés. En cas d'erreur, le formulaire indique les champs à corriger et conserve les données saisies. Pour une recette existante, la version précédemment enregistrée reste disponible jusqu'à la validation de la modification.
+
+#### **4.5.4. Affichage de la fiche recette**
+
+- La fiche affiche le titre, la catégorie, le temps de préparation, le nombre de portions, les ingrédients avec leurs quantités et unités, les étapes dans l'ordre et les valeurs nutritionnelles pour la recette entière et par portion.
+- La description, le temps de cuisson et le pays d'origine s'affichent lorsqu'ils sont renseignés.
+- Si aucune photo n'est fournie, une illustration par défaut s'affiche sur la fiche et sur les cartes de recettes.
+- Le propriétaire voit la visibilité actuelle de sa recette et peut accéder aux actions de modification et de suppression depuis la fiche.
+
+#### **4.5.5. Effets d'un changement de visibilité ou d'une suppression**
+
+- **Passage en privé.** La recette est retirée du catalogue et de la recherche publics. Sa photo est conservée et soumise aux mêmes droits d'accès que la fiche, y compris par son URL directe. Les favoris existants sont conservés, mais la recette est masquée dans les listes des utilisateurs qui n'y ont plus accès.
+- **Passage en public.** La recette et sa photo deviennent accessibles publiquement. La recette redevient visible dans les listes de favoris des utilisateurs qui l'avaient enregistrée.
+- **Suppression confirmée.** La fiche devient inaccessible. Les associations de favoris et la photo téléversée sont supprimées. L'illustration par défaut reste disponible pour les autres recettes.
 
 ### **4.6. Garde-manger personnel**
 
@@ -471,8 +484,10 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 | Un utilisateur s'inscrit                                    | Le compte est créé                                          |
 | Un utilisateur crée une recette                             | La recette et ses relations sont enregistrées               |
 | Le propriétaire modifie les ingrédients ou leurs quantités | Les modifications sont enregistrées et les valeurs nutritionnelles sont recalculées |
-| Le propriétaire passe une recette publique en privé         | La recette disparaît de la recherche publique et l'accès direct est protégé |
-| Le propriétaire confirme la suppression d'une recette      | La recette disparaît de « Mes recettes » et du catalogue public si elle y figurait |
+| Un utilisateur enregistre une recette sans photo et garde la visibilité présélectionnée | La recette est privée et sa fiche affiche l'illustration par défaut |
+| Le propriétaire passe une recette publique en privé         | La recette disparaît de la recherche publique et des favoris des autres utilisateurs. La fiche et la photo sont protégées par les mêmes droits d'accès |
+| Le propriétaire rend à nouveau publique une recette privée  | La fiche et sa photo sont accessibles publiquement et la recette réapparaît dans les favoris existants |
+| Le propriétaire confirme la suppression d'une recette      | La fiche devient inaccessible, les favoris associés et la photo téléversée sont supprimés |
 | Un utilisateur sélectionne un ingrédient CIQUAL             | L'ingrédient existant est réutilisé                         |
 | Une recette contient 200 g d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal                    |
 | Le nombre de portions change                                | Les valeurs par portion sont recalculées                    |
