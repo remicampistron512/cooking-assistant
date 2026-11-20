@@ -1,0 +1,119 @@
+@startuml
+title Cooking Assistant — Modèle logique de données
+hide circle
+
+entity "utilisateur" as Utilisateur {
+  * uti_id <<PK>>
+  --
+  * uti_nom_affichage
+  * uti_email <<UQ>>
+  * uti_mot_de_passe_hash
+  uti_image_url
+  uti_email_confirme_le
+  * uti_role
+}
+
+entity "categorie_alimentaire" as CategorieAlimentaire {
+  * cat_al_id <<PK>>
+  --
+  * cat_al_libelle <<UQ>>
+}
+
+entity "ingredient" as Ingredient {
+  * ing_id <<PK>>
+  --
+  * ing_categorie_id <<FK>>
+  * ing_id_ciqual <<UQ>>
+  * ing_designation_fr
+  ing_calories
+  ing_proteines
+  ing_glucides
+  ing_lipides
+  ing_image_url
+  * ing_actif
+}
+
+entity "categorie_recette" as CategorieRecette {
+  * cat_rec_id <<PK>>
+  --
+  * cat_rec_libelle <<UQ>>
+}
+
+entity "recette" as Recette {
+  * rec_id <<PK>>
+  --
+  * rec_proprietaire_id <<FK>>
+  * rec_categorie_id <<FK>>
+  * rec_titre
+  rec_description
+  * rec_temps_prep
+  rec_temps_cuisson
+  * rec_nbre_portions
+  rec_photo_url
+  * rec_visibilite
+  rec_pays
+}
+
+entity "rec_ing" as RecetteIngredient {
+  * rec_ing_id <<PK>>
+  --
+  * rec_id <<FK>>
+  * ing_id <<FK>>
+  * quantite
+  * unite
+}
+
+entity "etape" as Etape {
+  * eta_id <<PK>>
+  --
+  * rec_id <<FK>>
+  * eta_position
+  * eta_instruction
+}
+
+entity "favori" as Favori {
+  * fav_id <<PK>>
+  --
+  * uti_id <<FK>>
+  * rec_id <<FK>>
+  * fav_ajoute_le
+}
+
+entity "garde_manger" as GardeManger {
+  * gmg_id <<PK>>
+  --
+  * uti_id <<FK>> <<UQ>>
+}
+
+entity "gmg_ing" as GardeMangerIngredient {
+  * gmg_id <<PK>> <<FK>>
+  * ing_id <<PK>> <<FK>>
+  --
+  * gmg_ing_quantite
+  * gmg_ing_unite
+}
+
+CategorieAlimentaire ||--o{ Ingredient
+CategorieRecette ||--o{ Recette
+Utilisateur ||--o{ Recette : possède
+
+Recette ||--o{ RecetteIngredient
+Ingredient ||--o{ RecetteIngredient
+Recette ||--o{ Etape
+
+Utilisateur ||--o{ Favori
+Recette ||--o{ Favori
+
+Utilisateur ||--o| GardeManger
+GardeManger ||--o{ GardeMangerIngredient
+Ingredient ||--o{ GardeMangerIngredient
+
+note right of Favori
+  UNIQUE (uti_id, rec_id)
+end note
+
+note right of Etape
+  UNIQUE (rec_id, eta_position)
+end note
+
+@enduml
