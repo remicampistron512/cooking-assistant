@@ -393,28 +393,29 @@ Les favoris sont disponibles au lot 2. Ils sont associés au compte et accessibl
 | ------------------------ | ------------------------------------ |
 | Langage backend          | Python 3.12 ou supérieur             |
 | Framework                | Django 6                             |
-| Interface                | HTML5, CSS3, JavaScript              |
-| Framework CSS            | Bootstrap 5 avec `django-bootstrap5` |
-| Moteur de rendu          | Django Templates                     |
+| Interface utilisateur    | Angular, TypeScript, HTML et CSS |
+| Framework CSS            | Bootstrap 5 intégré au projet Angular |
+| Navigation               | Angular Router |
+| API                      | API REST JSON sous Django. Django REST Framework pourra être retenu pour standardiser la validation, les permissions et la pagination. |
 | Base de données initiale | SQLite                               |
-| Authentification         | Django Authentication                |
+| Authentification         | Sessions Django par cookie et protection CSRF |
+| Administration           | Django Admin |
+| Construction du front    | Angular CLI, Node.js et npm. Les versions compatibles sont fixées dans le projet et les dépendances sont verrouillées. |
 | Conteneurisation         | Docker et Docker Compose             |
 | Import Excel             | pandas et xlrd                       |
 | Gestion des versions     | Git                                  |
-| Tests                    | Django TestCase                      |
+| Tests                    | Django TestCase pour le backend et l'API, tests de composants Angular et tests de bout en bout sur les parcours critiques |
 | Maquettes                | Figma                                |
 
 Pour une mise en production à plus grande échelle, une migration vers PostgreSQL pourra être étudiée.
 
 ### **6.2. Architecture applicative**
 
-**Interface web responsive**
+L'interface utilisateur du lot 1 est une application Angular à page unique, rendue dans le navigateur. Angular gère la navigation, les formulaires et l'affichage des résultats et des erreurs. Il communique avec l'API Django sous `/api/`, sur la même origine que l'interface.
 
-Bootstrap 5 · Django Templates · JavaScript
+Django valide les données côté serveur, applique les droits d'accès, exécute les règles métier et accède à la base de données. Le calcul nutritionnel, le filtrage et la pagination des résultats ainsi que l'import CIQUAL sont traités côté serveur. Django Admin est accessible sous `/admin/`.
 
-**Application Django**
-
-Vues · Formulaires · Authentification · Services métier
+Le contrat de l'API décrit les routes, les formats des requêtes et des réponses, les erreurs de validation, les droits d'accès et la pagination. Le schéma des couches distingue Angular, l'API Django, les services métier, la base de données et le stockage des photos.
 
 **Base de données**
 
@@ -430,7 +431,7 @@ Importation XLS
 
 **Services externes**
 
-Sources de recettes externes
+Service d'envoi des e-mails de confirmation et de réinitialisation au lot 1. Sources de recettes externes au lot 3.
 
 Les traitements volumineux (importation de milliers d'ingrédients, rapprochement des ingrédients) pourront être exécutés en arrière-plan à l'aide d'une file de tâches, par exemple Celery et Redis.
 
@@ -502,7 +503,7 @@ L'environnement d'hébergement comprendra :
 
 - **Docker et Docker Compose** pour la conteneurisation et l'orchestration des services.    
 - **Gunicorn** comme serveur d'application WSGI pour Django.    
-- **Caddy** comme reverse proxy pour la gestion des requêtes HTTP/HTTPS et la distribution des fichiers statiques.    
+- **Caddy** pour servir les fichiers compilés d'Angular et acheminer les requêtes vers Django sous `/api/` et `/admin/`, sur la même origine. Pour une route de l'interface ouverte directement ou rechargée, Caddy sert `index.html`. Les routes API et d'administration, les fichiers statiques et les médias sont exclus de ce mécanisme. Les demandes de photos privées passent par le contrôle d'accès Django.
 - **SQLite** pour la phase initiale, avec une migration possible vers PostgreSQL pour un usage multiutilisateur plus important.    
 - Un espace de stockage persistant pour les fichiers médias, notamment les photographies des recettes et des ingrédients.    
 
@@ -529,12 +530,12 @@ Le déploiement de l'application reposera sur des conteneurs Docker afin de gara
 Une procédure de déploiement documentée devra permettre :
 
 1. La récupération de la version souhaitée du code source.    
-2. La construction ou la récupération des images Docker.    
+2. La construction de la version de production Angular et son intégration aux fichiers servis par Caddy lors de la construction des images Docker, ou la récupération des images déjà construites.
 3. La configuration des variables d'environnement.    
 4. L'exécution des migrations de la base de données.    
-5. La collecte des fichiers statiques Django.    
+5. La collecte des fichiers statiques de Django Admin avec `collectstatic`.
 6. Le démarrage ou la mise à jour des services.    
-7. La vérification du bon fonctionnement de l'application.    
+7. La vérification du fonctionnement de l'interface Angular, de l'API et de Django Admin, y compris l'ouverture directe d'une route Angular.
 
 Cette automatisation de déploiement s'implémentera grâce aux actions GitHub
 À terme, une chaîne d'intégration et de déploiement continus (CI/CD) pourra automatiser les tests, la construction des images et le déploiement.
@@ -584,7 +585,7 @@ En cas d'incident, les journaux techniques devront permettre d'identifier la cau
 
 ### **9.1. Performance**
 
-- Mesurer l'accueil, les résultats d'une recherche avec filtres, la fiche d'une recette publique avec photo et le formulaire de modification d'une recette. Utiliser une instance de recette sous Docker avec les réglages de production, hors trafic de test concurrent, et un jeu de données fixe comprenant au moins 1 000 recettes, le catalogue CIQUAL importé et des photos représentatives.
+- Mesurer l'accueil, les résultats d'une recherche avec filtres, la fiche d'une recette publique avec photo et le formulaire de modification d'une recette. Utiliser une instance de recette sous Docker avec la version de production d'Angular et l'API Django configurée pour la production, hors trafic de test concurrent, et un jeu de données fixe comprenant au moins 1 000 recettes, le catalogue CIQUAL importé et des photos représentatives.
 - Exécuter cinq audits Lighthouse par page en mode navigation avec le profil mobile simulé, sur la même machine, avec les mêmes versions de Chrome et Lighthouse et sans extension. Vider le cache du navigateur avant chaque mesure et conserver la session nécessaire à l'accès au formulaire. Consigner les versions, les paramètres de simulation, les URL et le jeu de données utilisés.
 - Sur chaque page, la médiane des cinq mesures doit satisfaire chacun des seuils suivants. Score de performance Lighthouse d'au moins 90 sur 100, LCP (affichage du plus grand élément visible) de 2,5 s maximum, CLS (décalages de mise en page) de 0,10 maximum et TBT (temps de blocage total) de 200 ms maximum. [Indicateurs et score Lighthouse](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring)
 
@@ -615,8 +616,9 @@ En cas d'incident, les journaux techniques devront permettre d'identifier la cau
 L'application devra appliquer les principes suivants :
 
 - Stockage sécurisé des mots de passe via Django.    
-- Contrôle d'accès aux recettes privées.    
-- Protection contre les attaques CSRF et les injections.    
+- Django contrôle les droits sur les ressources de l'API, y compris l'accès direct aux fiches et aux photos privées.
+- L'authentification utilise une session Django par cookie. Django vérifie la protection CSRF pour les requêtes qui modifient des données, y compris la connexion. Django fournit le cookie CSRF et le client HTTP Angular transmet son jeton dans l'en-tête attendu par Django.
+- Protection contre les injections.
 - Validation systématique des données reçues.    
 - Vérification des fichiers téléchargés (taille, type, contenu).    
 - Protection des clés d'API dans des variables d'environnement.    
@@ -664,6 +666,11 @@ La recette du socle couvre les scénarios marqués « Lot 1 » et les contrôles
 | Lot 1 | Un administrateur autorisé importe un fichier CIQUAL valide depuis Django Admin. | Les ingrédients sont créés ou mis à jour. Le rapport présente la version source, le résultat et les compteurs prévus en section 4.2. |
 | Lot 1 | Un visiteur recherche un ingrédient actif importé, filtre le catalogue par catégorie et ouvre la fiche de l'ingrédient. | L'ingrédient apparaît dans les résultats attendus. La fiche affiche ses valeurs nutritionnelles disponibles pour 100 g. |
 | Lot 1 | Un utilisateur sans droits administratifs tente d'accéder à la gestion des données ou de lancer un import CIQUAL. | L'accès est refusé et les données restent intactes. |
+| Lot 1 | Un visiteur ouvre directement l'URL d'une recette publique puis recharge la page. | Angular affiche la fiche correspondant à l'URL dans les deux cas. |
+| Lot 1 | Un utilisateur ouvre depuis son e-mail un lien valide de confirmation d'adresse ou de réinitialisation du mot de passe. | Le parcours correspondant s'ouvre directement et peut être mené à terme. |
+| Lot 1 | La session du propriétaire expire pendant la modification d'une recette. | La modification est refusée, la recette enregistrée reste intacte et l'interface invite l'utilisateur à se reconnecter. |
+| Lot 1 | Un autre utilisateur ouvre directement une fiche privée, interroge l'API correspondante ou demande l'URL de la photo. | Les accès aux données et à la photo sont refusés. L'interface indique que la fiche est inaccessible. |
+| Lot 1 | Django rejette une modification de recette qui échoue à une validation côté serveur. | Le formulaire Angular affiche l'erreur correspondante et conserve les données saisies. La recette enregistrée reste intacte. |
 | Lot 2 | Un utilisateur confirme la suppression de son compte avec des recettes publiques et privées | Les favoris du compte, les favoris associés à ses recettes et les entrées de son garde-manger sont supprimés. |
 | Lot 2 | Le propriétaire passe une recette publique en privé | La recette est masquée dans les favoris des utilisateurs qui ont perdu l'accès. |
 | Lot 2 | Le propriétaire rend à nouveau publique une recette privée | La recette réapparaît dans les listes de favoris où elle était enregistrée. |
@@ -684,14 +691,14 @@ La recette du socle couvre les scénarios marqués « Lot 1 » et les contrôles
 À l'issue du projet, les livrables envisagés sont :
 
 1. Cahier des charges fonctionnel et technique validé.    
-2. Maquettes Figma.    
+2. Maquettes Figma et schéma d'enchaînement des écrans associant les parcours principaux à leurs routes Angular.
 3. Modèle conceptuel et logique des données.    
 4. Code source versionné sous Git.    
-5. Application Django fonctionnelle.    
+5. Interface Angular et API Django intégrées, avec Django Admin.
 6. Scripts d'importation CIQUAL.    
 7. Tests automatisés et résultats de recette.    
 8. Configuration Docker et Docker Compose.    
-9. Documentation technique et guide d'installation.    
+9. Documentation technique incluant le contrat de l'API, guide d'installation et procédure de construction et de déploiement de l'interface Angular.
 10. Guide utilisateur et documentation d'administration.    
 11. Application déployée dans un environnement de démonstration.
 
@@ -717,6 +724,6 @@ Le **lot 1** est accepté lorsque toutes les conditions suivantes sont remplies.
 - L'énergie et les macronutriments sont calculés pour la recette entière et par portion selon les règles de la section 4.3, y compris les arrondis, les valeurs manquantes et la prise en compte des mises à jour CIQUAL.
 - Les administrateurs autorisés peuvent réaliser les opérations du lot 1 prévues en section 4.8.
 - Tous les scénarios du lot 1 de la section 11 sont exécutés avec succès et leurs résultats figurent dans le rapport de recette. Les seuils de performance et les contrôles d'accessibilité et de compatibilité mobile des sections 9.1 à 9.3 sont validés et documentés.
-- L'application fonctionne dans l'environnement Docker documenté.
+- L'interface Angular, l'API Django et Django Admin fonctionnent ensemble dans l'environnement Docker documenté. Les parcours du lot 1 sont validés de bout en bout.
 
 Les scénarios des lots 2 et 3 sont validés lors de la livraison de ces lots.
