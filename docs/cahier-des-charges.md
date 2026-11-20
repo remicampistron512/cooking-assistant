@@ -95,22 +95,24 @@ Les visiteurs pourront consulter le contenu public sans obligation de créer un 
 
 ## **3. Périmètre fonctionnel**
 
+Le projet est organisé en trois lots. Le lot 1 constitue le socle de la première livraison. Sa validation repose sur les scénarios du lot 1 de la section 11 et sur les critères de la section 14. Les fonctionnalités des lots 2 et 3 sont validées lors de leurs livraisons respectives.
 
-Le projet sera développé de manière progressive, afin de distinguer les fonctionnalités indispensables des évolutions avancées.
+**Lot 1 — Socle fonctionnel**
 
-**Lot 1 — Socle fonctionnel** (Prioritaire)
+- Gestion du compte utilisateur, de l'inscription et de la confirmation de l'adresse e-mail à la suppression du compte, selon la section 4.1.
+- Consultation du catalogue d'ingrédients CIQUAL, recherche par nom, filtrage par catégorie et accès aux fiches nutritionnelles. Import initial et mises à jour partielles ou complètes depuis l'administration, selon la section 4.2.
+- Consultation et recherche des recettes publiques sans compte, avec filtres, tri et pagination selon la section 4.4.
+- Création, consultation, modification et suppression de ses propres recettes dans « Mes recettes », avec ingrédients en g ou kg, étapes ordonnées, nombre de portions enregistré, photo facultative et gestion de la visibilité, selon les sections 4.5.1 à 4.5.5. Les effets liés aux favoris s'appliquent à partir du lot 2.
+- Calcul de l'énergie et des macronutriments pour la recette entière et par portion, selon la section 4.3.
+- Administration des utilisateurs et de leurs droits, des ingrédients, des recettes et des imports CIQUAL, selon la section 4.8.
 
-Gestion des utilisateurs, catalogue d'ingrédients, recherche de recettes, création et modification de recettes, étapes de préparation, saisie des quantités en grammes ou en kilogrammes, calcul des calories et macronutriments, administration.
+**Lot 2 — Assistance culinaire**
 
-**Lot 2 — Assistance culinaire** (évolution)
+Garde-manger personnel, recherche de recettes réalisables, conversions au-delà des unités de masse du lot 1, adaptation des quantités à la consultation selon le nombre de portions choisi, gestion des favoris et filtre « Mes favoris ».
 
-Garde-manger, recherche de recettes réalisables, conversions au-delà des unités de masse du lot 1, adaptation des portions et favoris.
+**Lot 3 — Importation de recettes externes**
 
-**Lot 3 — Importation de recettes externes** (avancé)
-
-Importation de recettes externes et rapprochement de leurs ingrédients avec le catalogue CIQUAL.
-
-Cette répartition constitue une proposition de priorisation. Elle devra être validée avant la réalisation.
+Import de recettes depuis des sources autorisées, rapprochement de leurs ingrédients avec le catalogue CIQUAL et suivi de ces imports depuis l'administration.
 
 ## **4. Spécifications fonctionnelles détaillées**
 
@@ -329,19 +331,11 @@ Le système conserve l'identifiant externe, la source et les informations d'attr
 
 ### **4.8. Administration**
 
-L'administration doit permettre de gérer :
+**Lot 1.** Django Admin permet aux administrateurs autorisés de gérer les utilisateurs et leurs droits, les ingrédients et leurs données nutritionnelles, ainsi que les recettes et leur visibilité. Il permet de lancer un import CIQUAL en mode partiel ou complet et de consulter le rapport de validation et le résultat de l'import selon la section 4.2.
 
-- Les utilisateurs et leurs droits.    
-- Les ingrédients et leurs données nutritionnelles.    
-- Les recettes et leur visibilité.    
-- Les imports CIQUAL.    
-- Les imports de recettes externes.    
-- Les associations entre ingrédients externes et ingrédients CIQUAL.    
-- Les erreurs et historiques des traitements automatisés.   
+**Lot 3.** L'administration permet de lancer les imports de recettes externes, de gérer les correspondances entre ingrédients externes et ingrédients CIQUAL et de consulter l'historique et les erreurs de ces traitements.
 
-Un tableau de bord administratif personnalisé pourra présenter les indicateurs suivants : nombre de recettes, nombre d'utilisateurs, nombre d'ingrédients, imports récents et traitements en échec.
-
-Le socle d'administration s'appuiera sur Django Admin.
+Un tableau de bord administratif personnalisé pourra être envisagé lors d'une évolution ultérieure.
 
 ### **4.9. Gestion des favoris**
 
@@ -632,52 +626,59 @@ L'application devra appliquer les principes suivants :
 
 ## **11. Tests et recette fonctionnelle**
 
-Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'erreur.
+La recette du socle couvre les scénarios marqués « Lot 1 » et les contrôles de performance, d'accessibilité et de compatibilité mobile des sections 9.1 à 9.3. Les scénarios marqués « Lot 2 » et « Lot 3 » sont exécutés lors de la recette de leur lot. Le rapport indique, pour chaque scénario exécuté, le résultat observé et son statut.
 
-| Scénario                                                    | Résultat attendu                                            |
-| ----------------------------------------------------------- | ----------------------------------------------------------- |
-| Un utilisateur s'inscrit puis confirme son adresse e-mail | Le compte est activé et l'utilisateur peut se connecter |
-| Un utilisateur demande une réinitialisation pour une adresse inconnue | Le même message s'affiche que pour un compte actif, sans envoi d'e-mail |
-| Un utilisateur change son mot de passe depuis le lien reçu | Le lien cesse de fonctionner, les sessions ouvertes sont invalidées et le nouveau mot de passe permet de se connecter |
-| Un utilisateur confirme la suppression de son compte avec des recettes publiques et privées | Le compte et ses recettes sont supprimés. Les fiches et photos sont inaccessibles, les favoris associés sont retirés et le garde-manger du compte est effacé |
-| Un utilisateur crée une recette                             | La recette et ses relations sont enregistrées               |
-| Le propriétaire modifie les ingrédients ou leurs quantités | Les modifications sont enregistrées et les valeurs nutritionnelles sont recalculées |
-| Un utilisateur enregistre une recette sans photo et garde la visibilité présélectionnée | La recette est privée et sa fiche affiche l'illustration par défaut |
-| Le propriétaire passe une recette publique en privé         | La recette disparaît de la recherche publique et des favoris des autres utilisateurs. La fiche et la photo sont protégées par les mêmes droits d'accès |
-| Le propriétaire rend à nouveau publique une recette privée  | La fiche et sa photo sont accessibles publiquement et la recette réapparaît dans les favoris existants |
-| Le propriétaire confirme la suppression d'une recette      | La fiche devient inaccessible, les favoris associés et la photo téléversée sont supprimés |
-| Un utilisateur connecté ajoute deux fois la même recette à ses favoris | Une seule carte apparaît dans « Mes favoris » et la fiche propose « Retirer des favoris » |
-| Un utilisateur retire son dernier favori depuis « Mes favoris » | La carte disparaît, la page affiche « Aucun favori à afficher » et la fiche propose de nouveau l'ajout |
-| Un utilisateur ajoute une de ses recettes privées à ses favoris | La recette apparaît dans son espace « Mes favoris » et reste absente du catalogue public, même avec le filtre « Mes favoris » |
-| Un utilisateur sélectionne un ingrédient CIQUAL             | L'ingrédient existant est réutilisé                         |
-| Un visiteur cherche « crepe », sélectionne la farine et les œufs, puis fixe un maximum de 20 minutes | Seules les recettes publiques dont le titre correspond, qui contiennent les deux ingrédients et qui demandent au plus 20 minutes de préparation sont affichées |
-| Un visiteur filtre les recettes à 500 kcal maximum par portion | Une recette à exactement 500 kcal est incluse. Une recette à 500,4 kcal et une recette sans valeur énergétique sont exclues |
-| Un visiteur trie les recettes par calories sans filtre nutritionnel | Les valeurs disponibles sont classées par ordre croissant, les égalités sont départagées par le titre puis l'identifiant, et les valeurs indisponibles figurent à la fin |
-| Une recette contient 200 g d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal                    |
-| Une recette contient 0,2 kg d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal |
-| Un utilisateur saisit une quantité en millilitres au lot 1 | Le formulaire refuse cette unité |
-| Deux ingrédients apportent chacun 0,25 kcal et la recette donne deux portions | L'affichage indique 1 kcal pour la recette et 0 kcal par portion, calculées à partir du total de 0,50 kcal |
-| Une recette apporte 2,5 g de protéines pour deux portions | L'affichage indique 2,5 g pour la recette et 1,3 g par portion |
-| La valeur CIQUAL des lipides manque pour un ingrédient et les autres valeurs sont complètes | La recette peut être enregistrée. Seuls les lipides sont affichés comme « Non disponible » et un filtre sur les lipides exclut la recette |
-| Tous les ingrédients ont une valeur CIQUAL de 0 g de glucides pour 100 g | La recette et chaque portion affichent 0,0 g de glucides |
-| Une mise à jour CIQUAL modifie une valeur utilisée dans une recette | Les valeurs nutritionnelles affichées reflètent la donnée mise à jour |
-| Le propriétaire enregistre un nouveau nombre de portions sans modifier les quantités d'une recette | Le total nutritionnel reste identique et les valeurs par portion sont recalculées |
-| Une fiche indique 300 g pour 4 portions et le visiteur choisit 6 portions puis 2 | La fiche affiche successivement 450 g et 150 g. Le total nutritionnel s'adapte et la recette enregistrée reste inchangée |
-| L'utilisateur a 400 g de farine en stock et la recette en demande 300 g pour 4 portions | La farine est couverte pour 4 portions. À 6 portions, le bilan indique 50 g manquants et le stock reste à 400 g |
-| L'utilisateur saisit zéro ou un nombre fractionnaire dans le sélecteur de portions | Un message indique que le nombre doit être un entier strictement positif et le dernier résultat valide reste affiché |
-| Un autre utilisateur tente de modifier une recette privée   | L'accès est refusé                                          |
-| Un fichier CIQUAL invalide est importé                      | L'import échoue sans perte de données                       |
-| Une ligne contient une valeur nutritionnelle négative et les autres lignes sont valides | Le rapport localise l'erreur et le catalogue reste intact |
-| Un code CIQUAL apparaît deux fois dans le même fichier | Un doublon identique est ignoré et signalé. Des lignes contradictoires bloquent l'import |
-| Un fichier CIQUAL valide est importé deux fois dans le même mode | Le second import ne crée aucun doublon et ne modifie pas les données déjà à jour |
-| Un ingrédient utilisé dans une recette est absent d'une mise à jour CIQUAL | En mode partiel, l'ingrédient reste inchangé. En mode complet, il est désactivé pour les nouvelles sélections et la recette conserve le lien et les dernières valeurs nutritionnelles |
-| Un code CIQUAL désactivé réapparaît dans un fichier valide | L'ingrédient est réactivé avec le même identifiant et ses valeurs sont mises à jour |
-| Une recette externe est importée deux fois                  | Aucun doublon n'est créé                                    |
-| Le garde-manger contient 0,2 kg de farine et la recette en demande 500 g | La recette apparaît parmi celles nécessitant un complément et indique 300 g de farine manquants |
-| Une recette contient deux lignes de 100 g et 150 g du même ingrédient et le garde-manger en contient 250 g | Les besoins sont additionnés et l'ingrédient est entièrement couvert |
-| Une recette contient un ingrédient absent du garde-manger et un autre présent en quantité suffisante | Le résultat indique que la quantité totale du premier ingrédient manque |
-| Une recette demande une quantité en grammes alors que le stock est indiqué en pièces sans équivalence | Le résultat affiche « Quantité à vérifier » et la recette ne figure pas parmi celles entièrement réalisables |
-| L'application est utilisée sur mobile                       | L'interface reste fonctionnelle sans débordement horizontal |
+| Lot | Scénario | Résultat attendu |
+| --- | --- | --- |
+| Lot 1 | Un utilisateur s'inscrit puis confirme son adresse e-mail | Le compte est activé et l'utilisateur peut se connecter |
+| Lot 1 | Un utilisateur demande une réinitialisation pour une adresse inconnue | Le même message s'affiche que pour un compte actif, sans envoi d'e-mail |
+| Lot 1 | Un utilisateur change son mot de passe depuis le lien reçu | Le lien cesse de fonctionner, les sessions ouvertes sont invalidées et le nouveau mot de passe permet de se connecter |
+| Lot 1 | Un utilisateur confirme la suppression de son compte avec des recettes publiques et privées | Le compte et ses recettes sont supprimés. Les fiches et les photos deviennent inaccessibles. |
+| Lot 1 | Un utilisateur crée une recette | La recette et ses relations sont enregistrées |
+| Lot 1 | Le propriétaire modifie les ingrédients ou leurs quantités | Les modifications sont enregistrées et les valeurs nutritionnelles sont recalculées |
+| Lot 1 | Un utilisateur enregistre une recette sans photo et garde la visibilité présélectionnée | La recette est privée et sa fiche affiche l'illustration par défaut |
+| Lot 1 | Le propriétaire passe une recette publique en privé | La recette disparaît du catalogue et de la recherche publics. Un visiteur ou un autre utilisateur sans autorisation se voit refuser l'accès direct à la fiche et à la photo. |
+| Lot 1 | Le propriétaire rend à nouveau publique une recette privée | La recette réapparaît dans le catalogue et la recherche publics. Sa fiche et sa photo sont à nouveau accessibles sans compte. |
+| Lot 1 | Le propriétaire confirme la suppression d'une recette | La fiche et la photo deviennent inaccessibles. La recette disparaît de « Mes recettes » et, si elle était publique, du catalogue. La photo téléversée est supprimée. |
+| Lot 1 | Un utilisateur sélectionne un ingrédient CIQUAL | L'ingrédient existant est réutilisé |
+| Lot 1 | Un visiteur cherche « crepe », sélectionne la farine et les œufs, puis fixe un maximum de 20 minutes | Seules les recettes publiques dont le titre correspond, qui contiennent les deux ingrédients et qui demandent au plus 20 minutes de préparation sont affichées |
+| Lot 1 | Un visiteur filtre les recettes à 500 kcal maximum par portion | Une recette à exactement 500 kcal est incluse. Une recette à 500,4 kcal et une recette sans valeur énergétique sont exclues |
+| Lot 1 | Un visiteur trie les recettes par calories sans filtre nutritionnel | Les valeurs disponibles sont classées par ordre croissant, les égalités sont départagées par le titre puis l'identifiant, et les valeurs indisponibles figurent à la fin |
+| Lot 1 | Une recette contient 200 g d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal |
+| Lot 1 | Une recette contient 0,2 kg d'un ingrédient à 100 kcal/100 g | La contribution calculée est de 200 kcal |
+| Lot 1 | Un utilisateur saisit une quantité en millilitres au lot 1 | Le formulaire refuse cette unité |
+| Lot 1 | Deux ingrédients apportent chacun 0,25 kcal et la recette donne deux portions | L'affichage indique 1 kcal pour la recette et 0 kcal par portion, calculées à partir du total de 0,50 kcal |
+| Lot 1 | Une recette apporte 2,5 g de protéines pour deux portions | L'affichage indique 2,5 g pour la recette et 1,3 g par portion |
+| Lot 1 | La valeur CIQUAL des lipides manque pour un ingrédient et les autres valeurs sont complètes | La recette peut être enregistrée. Seuls les lipides sont affichés comme « Non disponible » et un filtre sur les lipides exclut la recette |
+| Lot 1 | Tous les ingrédients ont une valeur CIQUAL de 0 g de glucides pour 100 g | La recette et chaque portion affichent 0,0 g de glucides |
+| Lot 1 | Une mise à jour CIQUAL modifie une valeur utilisée dans une recette | Les valeurs nutritionnelles affichées reflètent la donnée mise à jour |
+| Lot 1 | Le propriétaire enregistre un nouveau nombre de portions sans modifier les quantités d'une recette | Le total nutritionnel reste identique et les valeurs par portion sont recalculées |
+| Lot 1 | Un autre utilisateur tente de modifier une recette privée | L'accès est refusé |
+| Lot 1 | Un fichier CIQUAL invalide est importé | L'import échoue sans perte de données |
+| Lot 1 | Une ligne contient une valeur nutritionnelle négative et les autres lignes sont valides | Le rapport localise l'erreur et le catalogue reste intact |
+| Lot 1 | Un code CIQUAL apparaît deux fois dans le même fichier | Un doublon identique est ignoré et signalé. Des lignes contradictoires bloquent l'import |
+| Lot 1 | Un fichier CIQUAL valide est importé deux fois dans le même mode | Le second import ne crée aucun doublon et ne modifie pas les données déjà à jour |
+| Lot 1 | Un ingrédient utilisé dans une recette est absent d'une mise à jour CIQUAL | En mode partiel, l'ingrédient reste inchangé. En mode complet, il est désactivé pour les nouvelles sélections et la recette conserve le lien et les dernières valeurs nutritionnelles |
+| Lot 1 | Un code CIQUAL désactivé réapparaît dans un fichier valide | L'ingrédient est réactivé avec le même identifiant et ses valeurs sont mises à jour |
+| Lot 1 | L'application est utilisée sur mobile. | Les vérifications du protocole de la section 9.3 sont validées. |
+| Lot 1 | Un administrateur autorisé importe un fichier CIQUAL valide depuis Django Admin. | Les ingrédients sont créés ou mis à jour. Le rapport présente la version source, le résultat et les compteurs prévus en section 4.2. |
+| Lot 1 | Un visiteur recherche un ingrédient actif importé, filtre le catalogue par catégorie et ouvre la fiche de l'ingrédient. | L'ingrédient apparaît dans les résultats attendus. La fiche affiche ses valeurs nutritionnelles disponibles pour 100 g. |
+| Lot 1 | Un utilisateur sans droits administratifs tente d'accéder à la gestion des données ou de lancer un import CIQUAL. | L'accès est refusé et les données restent intactes. |
+| Lot 2 | Un utilisateur confirme la suppression de son compte avec des recettes publiques et privées | Les favoris du compte, les favoris associés à ses recettes et les entrées de son garde-manger sont supprimés. |
+| Lot 2 | Le propriétaire passe une recette publique en privé | La recette est masquée dans les favoris des utilisateurs qui ont perdu l'accès. |
+| Lot 2 | Le propriétaire rend à nouveau publique une recette privée | La recette réapparaît dans les listes de favoris où elle était enregistrée. |
+| Lot 2 | Le propriétaire confirme la suppression d'une recette | Les favoris associés à la recette sont supprimés. |
+| Lot 2 | Un utilisateur connecté ajoute deux fois la même recette à ses favoris | Une seule carte apparaît dans « Mes favoris » et la fiche propose « Retirer des favoris » |
+| Lot 2 | Un utilisateur retire son dernier favori depuis « Mes favoris » | La carte disparaît, la page affiche « Aucun favori à afficher » et la fiche propose de nouveau l'ajout |
+| Lot 2 | Un utilisateur ajoute une de ses recettes privées à ses favoris | La recette apparaît dans son espace « Mes favoris » et reste absente du catalogue public, même avec le filtre « Mes favoris » |
+| Lot 2 | Une fiche indique 300 g pour 4 portions et le visiteur choisit 6 portions puis 2 | La fiche affiche successivement 450 g et 150 g. Le total nutritionnel s'adapte et la recette enregistrée reste inchangée |
+| Lot 2 | L'utilisateur a 400 g de farine en stock et la recette en demande 300 g pour 4 portions | La farine est couverte pour 4 portions. À 6 portions, le bilan indique 50 g manquants et le stock reste à 400 g |
+| Lot 2 | L'utilisateur saisit zéro ou un nombre fractionnaire dans le sélecteur de portions | Un message indique que le nombre doit être un entier strictement positif et le dernier résultat valide reste affiché |
+| Lot 2 | Le garde-manger contient 0,2 kg de farine et la recette en demande 500 g | La recette apparaît parmi celles nécessitant un complément et indique 300 g de farine manquants |
+| Lot 2 | Une recette contient deux lignes de 100 g et 150 g du même ingrédient et le garde-manger en contient 250 g | Les besoins sont additionnés et l'ingrédient est entièrement couvert |
+| Lot 2 | Une recette contient un ingrédient absent du garde-manger et un autre présent en quantité suffisante | Le résultat indique que la quantité totale du premier ingrédient manque |
+| Lot 2 | Une recette demande une quantité en grammes alors que le stock est indiqué en pièces sans équivalence | Le résultat affiche « Quantité à vérifier » et la recette ne figure pas parmi celles entièrement réalisables |
+| Lot 3 | Une recette externe est importée deux fois | Aucun doublon n'est créé |
 ## **12. Livrables attendus**
 
 À l'issue du projet, les livrables envisagés sont :
@@ -707,16 +708,15 @@ Les tests devront couvrir les principales fonctionnalités ainsi que les cas d'e
 |Dépendance aux services externes|Indisponibilité|Gestion des échecs et mécanismes de reprise|
 ## **14. Critères d'acceptation du projet**
 
-Le **socle fonctionnel** pourra être considéré comme livré lorsque les conditions suivantes seront remplies :
+Le **lot 1** est accepté lorsque toutes les conditions suivantes sont remplies.
 
-- Un utilisateur peut s'inscrire, confirmer son adresse e-mail, se connecter, réinitialiser son mot de passe et supprimer son compte.
-- Le catalogue CIQUAL français est consultable et recherchable.    
-- Un utilisateur peut créer une recette à partir d'ingrédients existants, puis la modifier, changer sa visibilité ou la supprimer.
-- Les quantités et étapes sont correctement enregistrées.    
-- Les calories et macronutriments sont calculés correctement.    
-- Les recettes privées sont protégées.    
-- Les recettes publiques sont consultables.    
-- L'administration permet de gérer les données essentielles.    
-- Les tests critiques sont exécutés avec succès.    
-- L'application fonctionne dans un environnement Docker documenté.    
-- Les seuils de performance et les contrôles d'accessibilité et de compatibilité mobile des sections 9.1 à 9.3 sont validés et documentés dans le rapport de recette.
+- Les parcours de gestion du compte de la section 4.1 sont validés, de l'inscription et de la confirmation de l'adresse e-mail jusqu'à la suppression du compte, y compris la connexion, la gestion du profil et la réinitialisation du mot de passe.
+- Le catalogue CIQUAL est consultable et recherchable. Un administrateur autorisé peut importer et mettre à jour le catalogue en mode partiel ou complet et consulter le rapport. Un import invalide laisse le catalogue intact.
+- Un visiteur peut consulter et rechercher les recettes publiques selon les critères, tris et règles de pagination de la section 4.4.
+- Un utilisateur connecté peut créer, retrouver, modifier et supprimer ses recettes, ainsi que changer leur visibilité. Les quantités en g ou kg, les étapes dans l'ordre et le nombre de portions sont enregistrés conformément à la section 4.5. Les accès directs aux fiches et aux photos privées sont soumis aux droits prévus.
+- L'énergie et les macronutriments sont calculés pour la recette entière et par portion selon les règles de la section 4.3, y compris les arrondis, les valeurs manquantes et la prise en compte des mises à jour CIQUAL.
+- Les administrateurs autorisés peuvent réaliser les opérations du lot 1 prévues en section 4.8.
+- Tous les scénarios du lot 1 de la section 11 sont exécutés avec succès et leurs résultats figurent dans le rapport de recette. Les seuils de performance et les contrôles d'accessibilité et de compatibilité mobile des sections 9.1 à 9.3 sont validés et documentés.
+- L'application fonctionne dans l'environnement Docker documenté.
+
+Les scénarios des lots 2 et 3 sont validés lors de la livraison de ces lots.
