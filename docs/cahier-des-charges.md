@@ -112,7 +112,7 @@ Garde-manger personnel, recherche de recettes réalisables, conversions au-delà
 
 **Lot 3 — Importation de recettes externes**
 
-Import de recettes depuis des sources autorisées, rapprochement de leurs ingrédients avec le catalogue CIQUAL et suivi de ces imports depuis l'administration.
+Importation de recettes depuis des sources autorisées, stockage des brouillons dans MongoDB, rapprochement de leurs ingrédients avec le catalogue CIQUAL, validation dans Django Admin et enregistrement des recettes validées dans SQLite.
 
 ## **4. Spécifications fonctionnelles détaillées**
 
@@ -313,27 +313,19 @@ Le garde-manger et la fonction « Que puis-je cuisiner ? » sont disponibles au 
 
 L'administrateur peut importer des recettes depuis une source externe autorisant cet usage, via une API documentée.
 
-Le processus comprend :
+1. Récupérer la recette, vérifier les droits de conservation et relever son identifiant externe, sa source et les informations d'attribution nécessaires.
+2. Créer un brouillon dans MongoDB avec les ingrédients, les quantités, les unités d'origine et les étapes de préparation.
+3. Proposer des correspondances avec le catalogue CIQUAL et des conversions lorsque les unités le permettent. Signaler les lignes qui nécessitent une correction manuelle.
+4. Faire vérifier le brouillon par un administrateur autorisé. La validation exige des ingrédients et des quantités exploitables ainsi que la vérification des droits de réutilisation avant toute publication des contenus concernés.
+5. Enregistrer dans une transaction SQLite la recette validée, ses ingrédients, ses étapes et sa provenance, puis marquer le brouillon comme traité dans MongoDB.
 
-1. Récupération des données de la recette.    
-2. Extraction des ingrédients et quantités.    
-3. Rapprochement avec le catalogue CIQUAL.    
-4. Conversion des mesures.    
-5. Création des étapes de préparation.    
-6. Vérification et enregistrement.    
-
-Le système conserve l'identifiant externe, la source et les informations d'attribution nécessaires.
-
-
-**Règles de gestion :** 
-* les recettes importées ne doivent pas être dupliquées lors de plusieurs exécutions.
-- les droits de réutilisation des contenus importés doivent être vérifiés avant leur conservation et leur publication.
+Le couple source et identifiant externe identifie une recette importée. Réimporter la même recette donne accès au brouillon existant ou signale qu'elle a déjà été intégrée. Les corrections déjà saisies sont conservées. Si l'enregistrement dans SQLite réussit mais que la mise à jour du brouillon échoue, une nouvelle tentative retrouve la recette existante et termine le traitement sans doublon.
 
 ### **4.8. Administration**
 
 **Lot 1.** Django Admin permet aux administrateurs autorisés de gérer les utilisateurs et leurs droits, les ingrédients et leurs données nutritionnelles, ainsi que les recettes et leur visibilité. Il permet de lancer un import CIQUAL en mode partiel ou complet et de consulter le rapport de validation et le résultat de l'import selon la section 4.2.
 
-**Lot 3.** L'administration permet de lancer les imports de recettes externes, de gérer les correspondances entre ingrédients externes et ingrédients CIQUAL et de consulter l'historique et les erreurs de ces traitements.
+**Lot 3.** Les administrateurs autorisés peuvent lancer un import externe, consulter les brouillons, corriger les correspondances CIQUAL et les quantités, puis valider ou rejeter un brouillon. Django Admin affiche l'état du traitement, l'historique et les erreurs, et donne accès à la recette enregistrée après validation.
 
 Un tableau de bord administratif personnalisé pourra être envisagé lors d'une évolution ultérieure.
 
@@ -398,6 +390,7 @@ Les favoris sont disponibles au lot 2. Ils sont associés au compte et accessibl
 | Navigation               | Angular Router |
 | API                      | API REST JSON sous Django. Django REST Framework pourra être retenu pour standardiser la validation, les permissions et la pagination. |
 | Base de données initiale | SQLite                               |
+| Base documentaire du lot 3 | MongoDB, accessible depuis Django via PyMongo, pour les brouillons de recettes externes |
 | Authentification         | Sessions Django par cookie et protection CSRF |
 | Administration           | Django Admin |
 | Construction du front    | Angular CLI, Node.js et npm. Les versions compatibles sont fixées dans le projet et les dépendances sont verrouillées. |
@@ -431,7 +424,7 @@ Importation XLS
 
 **Services externes**
 
-Service d'envoi des e-mails de confirmation et de réinitialisation au lot 1. Sources de recettes externes au lot 3.
+Service d'envoi des e-mails de confirmation et de réinitialisation au lot 1. Sources de recettes externes au lot 3. Le service d'import externe Django lit et écrit les brouillons dans MongoDB. Django Admin permet leur validation. Les recettes validées sont enregistrées dans SQLite et suivent les règles de visibilité existantes.
 
 Les traitements volumineux (importation de milliers d'ingrédients, rapprochement des ingrédients) pourront être exécutés en arrière-plan à l'aide d'une file de tâches, par exemple Celery et Redis.
 
@@ -451,6 +444,8 @@ Les principales entités sont :
 |IngredientAlias|Correspondances et synonymes d'ingrédients|
 
 Les entités du socle seront implémentées en priorité. Les autres seront introduites progressivement, selon les lots retenus.
+
+Le document MongoDB du lot 3 regroupe la source, l'identifiant externe, les données d'origine, les propositions de rapprochement CIQUAL, les corrections et le statut du brouillon. Après validation, il référence la recette enregistrée. Le couple source et identifiant externe est unique dans la collection des brouillons et dans les données relationnelles de provenance des recettes importées.
 
 ## **7. Identité graphique et ergonomie**
 
@@ -509,6 +504,8 @@ L'environnement d'hébergement comprendra :
 
 La configuration des différents services devra permettre leur mise à jour et leur redémarrage indépendamment lorsque cela est possible.
 
+Au lot 3, MongoDB est ajouté à Docker Compose sur le réseau interne et utilise un volume persistant pour les brouillons de recettes externes.
+
 ### 8.3. Sécurité
 
 L'hébergement devra respecter les bonnes pratiques de sécurité :
@@ -540,6 +537,8 @@ Une procédure de déploiement documentée devra permettre :
 Cette automatisation de déploiement s'implémentera grâce aux actions GitHub
 À terme, une chaîne d'intégration et de déploiement continus (CI/CD) pourra automatiser les tests, la construction des images et le déploiement.
 
+La procédure de déploiement du lot 3 documente la configuration de la connexion Django à MongoDB et la vérification du parcours de validation d'un brouillon.
+
 ### 8.5. Sauvegarde et restauration
 
 Une stratégie de sauvegarde sera mise en place afin de prévenir les pertes de données.
@@ -552,6 +551,8 @@ Elle devra couvrir :
 
 Les sauvegardes devront être conservées sur un support distinct du serveur principal.
 Une procédure de restauration sera documentée et testée périodiquement.
+
+Au lot 3, la procédure couvre la sauvegarde et la restauration des brouillons MongoDB. Elle vérifie l'état des brouillons restaurés et leurs liens avec les recettes déjà intégrées.
 
 ### 8.6. Évolutivité et migration vers AWS
 
@@ -626,6 +627,8 @@ L'application devra appliquer les principes suivants :
 - Gestion des données personnelles conformément aux obligations applicables du RGPD.    
 - Sauvegarde et restauration de la base de données.    
 
+Au lot 3, Django accède à MongoDB depuis le réseau interne. La consultation, la modification et la validation des brouillons sont réservées aux administrateurs autorisés.
+
 ## **11. Tests et recette fonctionnelle**
 
 La recette du socle couvre les scénarios marqués « Lot 1 » et les contrôles de performance, d'accessibilité et de compatibilité mobile des sections 9.1 à 9.3. Les scénarios marqués « Lot 2 » et « Lot 3 » sont exécutés lors de la recette de leur lot. Le rapport indique, pour chaque scénario exécuté, le résultat observé et son statut.
@@ -685,7 +688,11 @@ La recette du socle couvre les scénarios marqués « Lot 1 » et les contrôles
 | Lot 2 | Une recette contient deux lignes de 100 g et 150 g du même ingrédient et le garde-manger en contient 250 g | Les besoins sont additionnés et l'ingrédient est entièrement couvert |
 | Lot 2 | Une recette contient un ingrédient absent du garde-manger et un autre présent en quantité suffisante | Le résultat indique que la quantité totale du premier ingrédient manque |
 | Lot 2 | Une recette demande une quantité en grammes alors que le stock est indiqué en pièces sans équivalence | Le résultat affiche « Quantité à vérifier » et la recette ne figure pas parmi celles entièrement réalisables |
-| Lot 3 | Une recette externe est importée deux fois | Aucun doublon n'est créé |
+| Lot 3 | Une recette externe contient un ingrédient sans correspondance CIQUAL. | Le brouillon est consultable dans Django Admin. La ligne est signalée et la validation finale reste bloquée jusqu'à sa correction. |
+| Lot 3 | Un administrateur valide un brouillon corrigé. | Une recette est enregistrée dans SQLite avec ses ingrédients, ses étapes et sa provenance. Le brouillon est marqué comme traité. |
+| Lot 3 | Le même identifiant externe est importé une seconde fois depuis la même source. | Le brouillon ou la recette existante est retrouvé. Les corrections sont conservées et aucun doublon n'est créé. |
+| Lot 3 | SQLite enregistre la recette, puis la mise à jour du brouillon MongoDB échoue. | Une nouvelle tentative rattache le brouillon à la recette existante et termine le traitement sans créer de seconde recette. |
+
 ## **12. Livrables attendus**
 
 À l'issue du projet, les livrables envisagés sont :
@@ -701,6 +708,12 @@ La recette du socle couvre les scénarios marqués « Lot 1 » et les contrôles
 9. Documentation technique incluant le contrat de l'API, guide d'installation et procédure de construction et de déploiement de l'interface Angular.
 10. Guide utilisateur et documentation d'administration.    
 11. Application déployée dans un environnement de démonstration.
+
+**Livrables du lot 3**
+
+- Modèle documentaire des brouillons et schéma du passage d'un brouillon MongoDB à une recette SQLite.
+- Configuration Docker Compose de MongoDB et procédure de sauvegarde et de restauration.
+- Résultats de la recette du lot 3.
 
 ## **13. Risques et contraintes**
 
@@ -727,3 +740,5 @@ Le **lot 1** est accepté lorsque toutes les conditions suivantes sont remplies.
 - L'interface Angular, l'API Django et Django Admin fonctionnent ensemble dans l'environnement Docker documenté. Les parcours du lot 1 sont validés de bout en bout.
 
 Les scénarios des lots 2 et 3 sont validés lors de la livraison de ces lots.
+
+Le lot 3 est accepté lorsqu'un administrateur autorisé peut importer une recette externe, corriger son brouillon dans Django Admin et l'enregistrer dans SQLite. La recette vérifie qu'une réimportation ou une reprise après incident ne crée aucun doublon et que les brouillons peuvent être restaurés.
